@@ -1,8 +1,18 @@
+using Appointly.Api.Common.Mapping;
+using Appointly.Application;
+using Appointly.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 {
     builder.Services.AddControllers();
+
+    builder.Services.AddMappings();
+
+    builder.Services.AddApplicationService();
+    builder.Services.AddInfrastructureServices();
+
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 }
