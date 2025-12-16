@@ -1,6 +1,8 @@
 using Appointly.Api.Common.Mapping;
 using Appointly.Application;
 using Appointly.Infrastructure;
+using Appointly.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddApplicationService();
     builder.Services.AddInfrastructureServices();
+
+    builder.Services.AddDbContext<AppointlyDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        );
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
@@ -27,7 +33,7 @@ var app = builder.Build();
         app.UseSwagger();
         app.UseSwaggerUI();
     }
-
+    app.UseExceptionHandler("/error");
     app.UseHttpsRedirection();
     app.MapControllers();
     app.Run();

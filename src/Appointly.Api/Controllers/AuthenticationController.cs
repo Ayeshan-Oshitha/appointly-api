@@ -21,9 +21,9 @@ namespace Appointly.Api.Controllers
 
 
         [HttpPost("register")]
-        public IActionResult Register(RegisterRequestDto requestDto)
+        public async Task<IActionResult> Register(RegisterRequestDto requestDto)
         {
-            var registerResult = _authenticationService.Register(
+            var registerResult =await _authenticationService.Register(
                 requestDto.FirstName,
                 requestDto.LastName,
                 requestDto.Email,
