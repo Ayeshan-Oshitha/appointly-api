@@ -34,9 +34,9 @@ namespace Appointly.Api.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login(LoginRequestDto requestDto)
+        public async Task<IActionResult> Login(LoginRequestDto requestDto)
         {
-            var loginResult = _authenticationService.Login(
+            var loginResult = await _authenticationService.Login(
                 requestDto.Email,
                 requestDto.Password);
 

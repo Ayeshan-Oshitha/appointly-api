@@ -1,7 +1,9 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.Common.Interfaces.Services;
 using Appointly.Application.Services.Authentication.Contracts;
+using Appointly.Domain.Infrastructure.Exceptions;
 using System.Threading.Tasks;
+
 
 namespace Appointly.Application.Services.Authentication
 {
@@ -21,7 +23,7 @@ namespace Appointly.Application.Services.Authentication
             {
                 throw new Exception("User with this email already exists.");
             }
-            var newUser =await _userRepository.AddUserAsync(firstName, lastName, email, password);
+            var newUser =await _userRepository.AddUserAsync(firstName.ToLower(), lastName.ToLower(), email.ToLower(), password);
 
             return new RegisterResponse
             {
@@ -33,17 +35,28 @@ namespace Appointly.Application.Services.Authentication
 
         }
 
-        public LoginResponse Login(string email, string password)
+        public async Task<LoginResponse> Login(string email, string password)
         {
-            var userId = Guid.NewGuid(); 
+
+            var existingUser = await _userRepository.GetUserByEmailAsync(email);
+
+            if(existingUser == null || existingUser.PasswordHash != password)
+            {
+                throw new NotFoundException("Invalid email or password.");
+
+            }
 
             return new LoginResponse
             {
-                UserId = userId,
-                FirstName = "John",
-                LastName = "Doe",
-                Email = email,
-                Token = _jwtTokenGenerator.GenerateAccessToken(userId, "John" , "Does" , email)
+                UserId = existingUser.Id,
+                FirstName = existingUser.FirstName,
+                LastName = existingUser.LastName,
+                Email = existingUser.Email,
+                Token = _jwtTokenGenerator.GenerateAccessToken(
+                    existingUser.Id,
+                    existingUser.FirstName,
+                    existingUser.LastName,
+                    existingUser.Email)
             };
         }
 

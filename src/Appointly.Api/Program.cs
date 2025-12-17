@@ -1,4 +1,5 @@
 using Appointly.Api.Common.Mapping;
+using Appointly.Api.Middleware;
 using Appointly.Application;
 using Appointly.Infrastructure;
 using Appointly.Infrastructure.Persistence;
@@ -33,7 +34,8 @@ var app = builder.Build();
         app.UseSwagger();
         app.UseSwaggerUI();
     }
-    app.UseExceptionHandler("/error");
+
+    app.UseMiddleware<ErrorHandlingMiddleware>();
     app.UseHttpsRedirection();
     app.MapControllers();
     app.Run();
