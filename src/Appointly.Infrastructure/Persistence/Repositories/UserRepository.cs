@@ -27,7 +27,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email.ToLower());
             return user;
         }
     }

@@ -3,7 +3,9 @@ using Appointly.Api.Middleware;
 using Appointly.Application;
 using Appointly.Infrastructure;
 using Appointly.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,19 @@ var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddDbContext<AppointlyDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        );
+
+    builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
+        options => options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "Appointly",
+            ValidAudience = "AppointlyUsers",
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("jshhdgshskdndHHYYnsddfdjf76474734854546kfg"))
+        }
         );
 
     builder.Services.AddEndpointsApiExplorer();
@@ -37,6 +52,8 @@ var app = builder.Build();
 
     app.UseMiddleware<ErrorHandlingMiddleware>();
     app.UseHttpsRedirection();
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.MapControllers();
     app.Run();
 }
