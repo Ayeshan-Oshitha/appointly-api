@@ -1,6 +1,5 @@
 ﻿using Appointly.Api.Common.DTOs.Authentication;
 using Appointly.Application.Services.Authentication;
-using Appointly.Application.Services.Authentication.DTOs;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +22,7 @@ namespace Appointly.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequestDto requestDto)
         {
-            var registerResult =await _authenticationService.Register(
+            var registerResult = await _authenticationService.Register(
                 requestDto.FirstName,
                 requestDto.LastName,
                 requestDto.Email,

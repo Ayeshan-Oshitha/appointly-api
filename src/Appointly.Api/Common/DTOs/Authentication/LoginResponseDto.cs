@@ -1,11 +1,11 @@
-﻿namespace Appointly.Application.Services.Authentication.DTOs
+﻿namespace Appointly.Api.Common.DTOs.Authentication
 {
     public class LoginResponseDto
     {
-        public Guid UserId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string Token { get; set; }
+        public required Guid UserId { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string Email { get; set; }
+        public required string Token { get; set; }
     }
 }

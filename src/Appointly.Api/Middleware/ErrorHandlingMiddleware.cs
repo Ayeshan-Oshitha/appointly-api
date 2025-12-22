@@ -1,5 +1,4 @@
 ﻿using Appointly.Domain.Infrastructure.Exceptions;
-using System.Net;
 using System.Text.Json;
 
 namespace Appointly.Api.Middleware
@@ -50,8 +49,7 @@ namespace Appointly.Api.Middleware
                 errorCode = statusCode
             };
 
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response)
-   );
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
     }
 }

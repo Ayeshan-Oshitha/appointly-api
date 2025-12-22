@@ -25,6 +25,10 @@ namespace Appointly.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(255);
 
+            builder.Property(u => u.PasswordHash)
+                .IsRequired()
+                .HasMaxLength(512);
+
             builder.HasIndex(u => u.Email)
                 .IsUnique();
         }

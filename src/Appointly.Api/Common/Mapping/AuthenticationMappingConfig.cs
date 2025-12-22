@@ -1,5 +1,5 @@
 ﻿using Appointly.Application.Services.Authentication.Contracts;
-using Appointly.Application.Services.Authentication.DTOs;
+using Appointly.Api.Common.DTOs.Authentication;
 using Mapster;
 
 namespace Appointly.Api.Common.Mapping

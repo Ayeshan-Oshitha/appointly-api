@@ -2,7 +2,6 @@
 using Appointly.Application.Common.Interfaces.Services;
 using Appointly.Application.Services.Authentication.Contracts;
 using Appointly.Domain.Infrastructure.Exceptions;
-using System.Threading.Tasks;
 
 
 namespace Appointly.Application.Services.Authentication
@@ -10,8 +9,8 @@ namespace Appointly.Application.Services.Authentication
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
-        private readonly IuserRepository _userRepository;
-        public AuthenticationService(IJwtTokenGenerator jwtTokenGenerator, IuserRepository userRepository)
+        private readonly IUserRepository _userRepository;
+        public AuthenticationService(IJwtTokenGenerator jwtTokenGenerator, IUserRepository userRepository)
         {
             _jwtTokenGenerator = jwtTokenGenerator;
             _userRepository = userRepository;
@@ -21,9 +20,9 @@ namespace Appointly.Application.Services.Authentication
             var existingUser = await _userRepository.GetUserByEmailAsync(email);
             if (existingUser != null)
             {
-                throw new Exception("User with this email already exists.");
+                throw new ConflictException("User with this email already exists.");
             }
-            var newUser =await _userRepository.AddUserAsync(firstName.ToLower(), lastName.ToLower(), email.ToLower(), password);
+            var newUser = await _userRepository.AddUserAsync(firstName, lastName, email.ToLower(), password);
 
             return new RegisterResponse
             {
@@ -40,9 +39,9 @@ namespace Appointly.Application.Services.Authentication
 
             var existingUser = await _userRepository.GetUserByEmailAsync(email);
 
-            if(existingUser == null || existingUser.PasswordHash != password)
+            if (existingUser == null || existingUser.PasswordHash != password)
             {
-                throw new NotFoundException("Invalid email or password.");
+                throw new UnauthorizedException("Invalid email or password.");
 
             }
 
