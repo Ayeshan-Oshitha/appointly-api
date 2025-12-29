@@ -1,27 +1,108 @@
-﻿using Appointly.Domain.Entities;
+﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Domain.Entities;
+using Appointly.Domain.Infrastructure.Exceptions;
 
 namespace Appointly.Application.Services.Location
 {
-    internal class LocationService : ILocationService
+    public class LocationService : ILocationService
     {
-        public Task<City[]> GetCities(Guid districtId)
+        private readonly ILocationRepository _locationRepository;
+        public LocationService(ILocationRepository locationRepository)
         {
-            throw new NotImplementedException();
+            _locationRepository = locationRepository;
         }
 
-        public Task<City[]> GetCitiesByProvince(Guid provinceId)
+        // Get all provinces
+        public async Task<List<Province>> GetProvinces()
         {
-            throw new NotImplementedException();
+            return await _locationRepository.GetProvincesAsync();
         }
 
-        public Task<District[]> GetDistricts(Guid provinceId)
+        // Get all districts or districts by province id
+        public async Task<List<District>> GetDistricts(Guid? provinceId)
         {
-            throw new NotImplementedException();
+            return await _locationRepository.GetDistrictsByProvinceIdAsync(provinceId);
         }
 
-        public Task<Province[]> GetProvinces()
+        // Get all cities or cities by district id
+        public async Task<List<City>> GetCities(Guid? districtId)
         {
-            throw new NotImplementedException();
+            return await _locationRepository.GetCitiesByDistrictIdAsync(districtId);
+        }
+
+        // Get all cities or cities by province id
+        public async Task<List<City>> GetCitiesByProvince(Guid? provinceId)
+        {
+            return await _locationRepository.GetCitiesByProvienceIdAsync(provinceId);
+        }
+
+        // Get city by cityId
+        public async Task<City?> GetCity(Guid cityId)
+        {
+            return await _locationRepository.GetCityById(cityId);
+        }
+
+        public async Task<City> AddCity(string name, Guid provienceId, Guid districtId)
+        {
+            await ValidatePerovienceDistrictRelationship(districtId, provienceId);
+
+            var city = new City
+            {
+                Name = name,
+                Slug = name.ToLower().Replace(" ", "-"),
+                ProvinceId = provienceId,
+                DistrictId = districtId
+            };
+
+            var addedCity = await _locationRepository.AddCityAsync(city);
+            return addedCity;
+        }
+
+        public async Task<City> UpdateCity(Guid cityId, string? name, Guid? provienceId, Guid? districtId)
+        {
+            var existingCity = await _locationRepository.GetCityById(cityId);
+
+            if (existingCity == null)
+            {
+                throw new NotFoundException("City not found");
+            }
+
+            var newProvinceId = provienceId ?? existingCity.ProvinceId;
+            var newDistrictId = districtId ?? existingCity.DistrictId;
+
+            await ValidatePerovienceDistrictRelationship(newDistrictId, newProvinceId);
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                existingCity.Name = name;
+                existingCity.Slug = name.ToLower().Replace(" ", "-");
+            }
+            if (provienceId.HasValue)
+            {
+                existingCity.ProvinceId = provienceId.Value;
+            }
+
+            if (districtId.HasValue)
+            {
+                existingCity.DistrictId = districtId.Value;
+            }
+
+            await _locationRepository.SaveChangesAsync();
+            return existingCity;
+        }
+
+
+        private async Task ValidatePerovienceDistrictRelationship(Guid districtId, Guid provienceId)
+        {
+            var district = await _locationRepository.GetDistrictByIdAsync(districtId);
+            if (district == null)
+            {
+                throw new NotFoundException("District not found");
+            }
+            if (district.ProvinceId != provienceId)
+            {
+                throw new BadRequestException("District does not belong to the specified province");
+            }
         }
     }
 }

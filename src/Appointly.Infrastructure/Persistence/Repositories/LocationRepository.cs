@@ -1,6 +1,5 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Domain.Entities;
-using Appointly.Domain.Infrastructure.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Appointly.Infrastructure.Persistence.Repositories
@@ -30,10 +29,16 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return await districts.OrderBy(d => d.Slug).ToListAsync();
         }
 
-        public async Task<City> GetCityById(Guid cityId)
+        public async Task<District?> GetDistrictByIdAsync(Guid districtId)
+        {
+            var district = await _dbContext.Districts.AsNoTracking().FirstOrDefaultAsync(d => d.Id == districtId);
+            return district;
+        }
+
+        public async Task<City?> GetCityById(Guid cityId)
         {
             var city = await _dbContext.Cities.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cityId);
-            return city!;
+            return city;
         }
 
         public async Task<List<City>> GetCitiesByDistrictIdAsync(Guid? districtId)
