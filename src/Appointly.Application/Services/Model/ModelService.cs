@@ -30,6 +30,11 @@ namespace Appointly.Application.Services.Models
                 BrandId = brandId
             };
 
+            if (await _modelRepository.ModelSlugExistsAsync(model.Slug))
+            {
+                throw new ConflictException("Model with the same name already exists.");
+            }
+
             var addedModel = await _modelRepository.AddModelAsync(model);
             return addedModel;
         }

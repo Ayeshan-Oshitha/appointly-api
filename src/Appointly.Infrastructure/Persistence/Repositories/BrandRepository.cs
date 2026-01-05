@@ -43,6 +43,11 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return await _dbContext.Brands.FirstOrDefaultAsync(b => b.Id == brandId);
         }
 
+        public Task<bool> BrandSlugExistsAsync(string slug)
+        {
+            return _dbContext.Brands.AnyAsync(b => b.Slug == slug);
+        }
+
         public Task SaveChangesAsync()
         {
             return _dbContext.SaveChangesAsync();

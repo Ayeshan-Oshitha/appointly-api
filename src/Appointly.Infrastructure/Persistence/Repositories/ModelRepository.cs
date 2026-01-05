@@ -57,5 +57,11 @@ namespace Appointly.Infrastructure.Persistence.Repositories
         {
             return _dbContext.Models.AnyAsync(c => c.Slug == slug);
         }
+
+        public async Task<bool> HasModelsAsync(Guid brandId)
+        {
+            return await _dbContext.Models
+                .AnyAsync(m => m.BrandId == brandId);
+        }
     }
 }

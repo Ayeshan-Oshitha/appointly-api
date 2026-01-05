@@ -7,10 +7,12 @@ namespace Appointly.Application.Services.Brands
     public class BrandService : IBrandService
     {
         private readonly IBrandRepository _brandRepository;
+        private readonly IModelRepository _modelRepository;
 
-        public BrandService(IBrandRepository brandRepository)
+        public BrandService(IBrandRepository brandRepository, IModelRepository modelRepository)
         {
             _brandRepository = brandRepository;
+            _modelRepository = modelRepository;
         }
 
         public async Task<Brand> AddBrand(string name)
@@ -20,6 +22,11 @@ namespace Appointly.Application.Services.Brands
                 Name = name,
                 Slug = name.Trim().ToLower().Replace(" ", "-")
             };
+
+            if (await _brandRepository.BrandSlugExistsAsync(brand.Slug))
+            {
+                throw new ConflictException("Brand with the same name already exists.");
+            }
 
             var addedBrand =  await _brandRepository.AddBrandAsync(brand);
             return addedBrand;
@@ -32,11 +39,18 @@ namespace Appointly.Application.Services.Brands
 
         public async Task DeleteBrand(Guid brandId)
         {
-            var existingBrand = await _brandRepository.DeleteBrandAsync(brandId);
+            var existingBrand = await _brandRepository.GetBrandByIdAsync(brandId);
 
-            if (!existingBrand)
+            if (existingBrand == null)
             {
                 throw new NotFoundException("Brand not found");
+            }
+
+            var isModelsExisting = await _modelRepository.HasModelsAsync(brandId);
+
+            if (isModelsExisting)
+            {
+                throw new ConflictException("This brand has existing Models. Please remove them first");
             }
 
             var deleted = await _brandRepository.DeleteBrandAsync(brandId);

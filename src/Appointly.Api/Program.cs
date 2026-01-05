@@ -67,6 +67,7 @@ var app = builder.Build();
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<AppointlyDbContext>();
         await LocationSeeder.SeedAsync(dbContext);
+        await BrandModelSeeder.SeedAsync(dbContext);
     }
 
     app.Run();
