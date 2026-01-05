@@ -19,14 +19,14 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
         public async Task<List<District>> GetDistrictsByProvinceIdAsync(Guid? provinceId)
         {
-            var districts =  _dbContext.Districts.AsNoTracking();
+            IQueryable<District> query =  _dbContext.Districts.AsNoTracking().Include(p => p.Province);
 
             if (provinceId.HasValue)
             {
-                districts = districts.Where(d => d.ProvinceId == provinceId.Value);
+                query = query.Where(d => d.ProvinceId == provinceId.Value);
             }
 
-            return await districts.OrderBy(d => d.Slug).ToListAsync();
+            return await query.OrderBy(d => d.Slug).ToListAsync();
         }
 
         public async Task<District?> GetDistrictByIdAsync(Guid districtId)
@@ -37,13 +37,13 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
         public async Task<City?> GetCityById(Guid cityId)
         {
-            var city = await _dbContext.Cities.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cityId);
+            var city = await _dbContext.Cities.AsNoTracking().Include(c => c.Province).Include(c => c.District).FirstOrDefaultAsync(c => c.Id == cityId);
             return city;
         }
 
         public async Task<List<City>> GetCitiesByDistrictIdAsync(Guid? districtId)
         {
-            var cities =  _dbContext.Cities.AsNoTracking();
+            IQueryable<City> cities =  _dbContext.Cities.AsNoTracking().Include(c => c.Province).Include(c => c.District);
 
             if (districtId.HasValue)
             {
@@ -53,13 +53,13 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return await cities.OrderBy(c => c.Slug).ToListAsync();
         }
 
-        public async Task<List<City>> GetCitiesByProvienceIdAsync(Guid? provienceId)
+        public async Task<List<City>> GetCitiesByProvienceIdAsync(Guid? provinceId)
         {
-            var cities = _dbContext.Cities.AsNoTracking();
+            IQueryable<City> cities = _dbContext.Cities.AsNoTracking().Include(c => c.Province).Include(c => c.District);
 
-            if (provienceId.HasValue)
+            if (provinceId.HasValue)
             {
-                cities = cities.Where(c => c.DistrictId == provienceId.Value);
+                cities = cities.Where(c => c.ProvinceId == provinceId.Value);
             }
 
             return await cities.OrderBy(c => c.Slug).ToListAsync();
@@ -67,6 +67,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
         public async Task<City> AddCityAsync(City city)
         {
+
             _dbContext.Cities.Add(city);
             await _dbContext.SaveChangesAsync();
             return city;
@@ -75,6 +76,25 @@ namespace Appointly.Infrastructure.Persistence.Repositories
         public Task SaveChangesAsync()
         {
             return _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> DeleteAsync(Guid cityId)
+        {
+            var existingCity = await _dbContext.Cities.FirstOrDefaultAsync(c => c.Id == cityId);
+
+            if (existingCity == null)
+            {
+                return false;
+            }
+
+            _dbContext.Cities.Remove(existingCity);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public Task<bool> CitySlugExistsAsync(string slug)
+        {
+            return _dbContext.Cities.AnyAsync(c => c.Slug == slug);
         }
     }
 }

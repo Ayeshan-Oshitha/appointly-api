@@ -13,6 +13,7 @@ namespace Appointly.Infrastructure
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ILocationRepository, LocationRepository>();
             return services;
         }
     }

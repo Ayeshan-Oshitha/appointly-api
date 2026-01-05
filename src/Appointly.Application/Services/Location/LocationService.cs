@@ -54,6 +54,11 @@ namespace Appointly.Application.Services.Location
                 DistrictId = districtId
             };
 
+            if (await _locationRepository.CitySlugExistsAsync(city.Slug))
+            {
+                throw new BadRequestException("City with the same name already exists");
+            }
+
             var addedCity = await _locationRepository.AddCityAsync(city);
             return addedCity;
         }
@@ -89,6 +94,23 @@ namespace Appointly.Application.Services.Location
 
             await _locationRepository.SaveChangesAsync();
             return existingCity;
+        }
+
+        public async Task DeleteCity(Guid cityId)
+        {
+            var existingCity = await _locationRepository.GetCityById(cityId);
+
+            if (existingCity == null)
+            {
+                throw new NotFoundException("City not found");
+            }
+
+            var deleted = await _locationRepository.DeleteAsync(cityId);
+
+            if (!deleted)
+            {
+                throw new Exception("Failed to delete city");
+            }
         }
 
 
