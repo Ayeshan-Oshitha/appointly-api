@@ -79,7 +79,7 @@ namespace Appointly.Api.Controllers
         public async Task<IActionResult> DeleteCity([FromRoute] Guid cityId)
         {
             await _locationService.DeleteCity(cityId);
-            return Ok();
+            return Ok("City Deleted Successfully");
         }
     }
 }
