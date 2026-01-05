@@ -37,7 +37,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
         public async Task<City?> GetCityById(Guid cityId)
         {
-            var city = await _dbContext.Cities.AsNoTracking().Include(c => c.Province).Include(c => c.District).FirstOrDefaultAsync(c => c.Id == cityId);
+            var city = await _dbContext.Cities.Include(c => c.Province).Include(c => c.District).FirstOrDefaultAsync(c => c.Id == cityId);
             return city;
         }
 

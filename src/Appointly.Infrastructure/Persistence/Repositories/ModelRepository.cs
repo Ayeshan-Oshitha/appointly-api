@@ -45,12 +45,17 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
         public async Task<Model?> GetModelByIdAsync(Guid modelId)
         {
-            return await _dbContext.Models.AsNoTracking().Include(m => m.Brand).FirstOrDefaultAsync(m => m.Id == modelId);
+            return await _dbContext.Models.Include(m => m.Brand).FirstOrDefaultAsync(m => m.Id == modelId);
         }
 
         public  Task SaveModelAsync()
         {
             return  _dbContext.SaveChangesAsync();
+        }
+
+        public Task<bool> ModelSlugExistsAsync(string slug)
+        {
+            return _dbContext.Models.AnyAsync(c => c.Slug == slug);
         }
     }
 }

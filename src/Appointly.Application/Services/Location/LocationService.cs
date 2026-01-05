@@ -49,7 +49,7 @@ namespace Appointly.Application.Services.Location
             var city = new City
             {
                 Name = name,
-                Slug = name.ToLower().Replace(" ", "-"),
+                Slug = name.Trim().ToLower().Replace(" ", "-"),
                 ProvinceId = provienceId,
                 DistrictId = districtId
             };
@@ -70,7 +70,7 @@ namespace Appointly.Application.Services.Location
             if (existingCity == null)
             {
                 throw new NotFoundException("City not found");
-            }
+            } 
 
             var newProvinceId = provienceId ?? existingCity.ProvinceId;
             var newDistrictId = districtId ?? existingCity.DistrictId;
@@ -82,14 +82,10 @@ namespace Appointly.Application.Services.Location
                 existingCity.Name = name;
                 existingCity.Slug = name.ToLower().Replace(" ", "-");
             }
-            if (provienceId.HasValue)
+            if (provienceId.HasValue || districtId.HasValue)
             {
-                existingCity.ProvinceId = provienceId.Value;
-            }
-
-            if (districtId.HasValue)
-            {
-                existingCity.DistrictId = districtId.Value;
+                existingCity.ProvinceId = newProvinceId;
+                existingCity.DistrictId = newDistrictId;
             }
 
             await _locationRepository.SaveChangesAsync();

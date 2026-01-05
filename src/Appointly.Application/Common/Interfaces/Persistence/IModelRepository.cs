@@ -9,5 +9,6 @@ namespace Appointly.Application.Common.Interfaces.Persistence
         public Task<Model> AddModelAsync(Model model);
         public Task SaveModelAsync();
         public Task<bool> DeleteModelAsync(Guid modelId);
+        Task<bool> ModelSlugExistsAsync(string slug);
     }
 }
