@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Appointly.Infrastructure.Persistence.Configurations
 {
-    internal class AdvertismentConfiguration : IEntityTypeConfiguration<Advertisment>
+    internal class AdvertismentConfiguration : IEntityTypeConfiguration<Advertisement>
     {
-        public void Configure(EntityTypeBuilder<Advertisment> builder)
+        public void Configure(EntityTypeBuilder<Advertisement> builder)
         {
             builder.ToTable("Advertisments");
 

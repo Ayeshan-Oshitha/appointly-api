@@ -16,6 +16,8 @@ namespace Appointly.Infrastructure
             services.AddScoped<ILocationRepository, LocationRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<IModelRepository, ModelRepository>();
+            services.AddScoped<IAdvertismentRepository, AdvertisementRepository>();
+
             return services;
         }
     }

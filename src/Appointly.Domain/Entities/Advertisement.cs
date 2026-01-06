@@ -2,7 +2,7 @@
 
 namespace Appointly.Domain.Entities
 {
-    public class Advertisment
+    public class Advertisement
     {
         public Guid Id { get; set; }
         public string Title { get; set; }  = null!;
@@ -13,7 +13,7 @@ namespace Appointly.Domain.Entities
         public FuelType FuelType { get; set; }
         public TransmissionType TransmissionType { get; set; }
         public VehicleCondition VehicleCondition { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public string? Address { get; set; }
         public Guid BrandId { get; set; }
@@ -27,7 +27,7 @@ namespace Appointly.Domain.Entities
         public string ContactPhone { get; set; } = null!;
         public string ContactEmail { get; set; } = null!;
         public bool IsHidePhone { get; set; } = false;
-        public bool? IsWhatsapp { get; set; }
+        public bool? IsWhatsapp { get; set; } = false;
 
         //public Guid SellerId { get; set; }
         //public Guid AdminId { get; set; }
