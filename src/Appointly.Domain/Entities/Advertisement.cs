@@ -1,4 +1,4 @@
-﻿using Appointly.Domain.Common;
+﻿using Appointly.Domain.Common.Enum;
 
 namespace Appointly.Domain.Entities
 {

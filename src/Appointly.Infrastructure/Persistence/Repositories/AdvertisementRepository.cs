@@ -1,4 +1,5 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.Services.Advertisments.Contracts;
 using Appointly.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +24,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return await _dbContext.Advertisements.FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<List<Advertisement>> GetAllAdvertismentsAsync()
+        public async Task<List<Advertisement>> GetAllAdvertismentsAsync(AdvertisementQuery query)
         {
             return await _dbContext.Advertisements
                 .AsNoTracking()
@@ -34,6 +35,26 @@ namespace Appointly.Infrastructure.Persistence.Repositories
                 .Include(a => a.City)
                     .ThenInclude(c => c.Province)
                 .ToListAsync();
+        }
+
+
+        public async Task<bool> DeleteAdvertisementAsync(Guid id)
+        {
+            var exisitingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(a => a.Id == id);
+
+            if (exisitingAd == null)
+            {
+                return false;
+            }
+
+            _dbContext.Advertisements.Remove(exisitingAd);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public Task SaveAdvertisementAsync()
+        {
+            return _dbContext.SaveChangesAsync();
         }
     }
 }

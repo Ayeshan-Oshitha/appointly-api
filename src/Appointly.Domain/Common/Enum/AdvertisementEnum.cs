@@ -1,4 +1,4 @@
-﻿namespace Appointly.Domain.Common
+﻿namespace Appointly.Domain.Common.Enum
 {
     public enum FuelType
     {
@@ -28,5 +28,20 @@
         Rejected = 3,   
         Sold = 4, 
         Removed = 5 
+    }
+
+    public enum SortBy
+    {
+        CreatedDate,
+        Year,
+        Price,
+        EngineCapacity,
+        Title
+    }
+
+    public enum SortOrder
+    {
+        Asc,
+        Desc
     }
 }

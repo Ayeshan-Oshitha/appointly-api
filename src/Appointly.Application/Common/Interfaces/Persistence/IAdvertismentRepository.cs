@@ -1,4 +1,5 @@
-﻿using Appointly.Domain.Entities;
+﻿using Appointly.Application.Services.Advertisments.Contracts;
+using Appointly.Domain.Entities;
 
 namespace Appointly.Application.Common.Interfaces.Persistence
 {
@@ -6,6 +7,8 @@ namespace Appointly.Application.Common.Interfaces.Persistence
     {
         Task<Advertisement> AddAdvertismentAsync(Advertisement advertisment);
         Task<Advertisement?> GetAdvertismentByIdAsync(Guid id);
-        Task<List<Advertisement>> GetAllAdvertismentsAsync();
+        Task<List<Advertisement>> GetAllAdvertismentsAsync(AdvertisementQuery query);
+        Task<bool> DeleteAdvertisementAsync(Guid id);
+        public Task SaveAdvertisementAsync();
     }
 }

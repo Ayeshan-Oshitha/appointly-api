@@ -33,14 +33,14 @@ namespace Appointly.Api.Controllers
             return Ok(_mapper.Map<BrandResponseDto>(brand));
         }
 
-        [HttpPut("{brandId}")]
+        [HttpPut("{brandId:guid}")]
         public async Task<IActionResult> UpdateBrand([FromRoute] Guid brandId, [FromBody] UpdateBrandRequestDto request)
         {
             var brand = await _brandService.UpdateBrand(brandId, request.Name);
             return Ok(_mapper.Map<BrandResponseDto>(brand));
         }
 
-        [HttpDelete("{brandId}")]
+        [HttpDelete("{brandId:guid}")]
         public async Task<IActionResult> DeleteBrand([FromRoute] Guid brandId)
         {
            await _brandService.DeleteBrand(brandId);

@@ -1,7 +1,10 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.Services.Advertisements;
 using Appointly.Application.Services.Advertisment.Contracts;
+using Appointly.Application.Services.Advertisments.Contracts;
 using Appointly.Domain.Entities;
+using Appointly.Domain.Infrastructure.Exceptions;
+using Mapster;
 
 namespace Appointly.Application.Services.Advertisments
 {
@@ -41,9 +44,43 @@ namespace Appointly.Application.Services.Advertisments
            return addedAdvertisment;
         }
 
-        public async  Task<List<Advertisement>> GetAllAdvertisments()
+        public async  Task<List<Advertisement>> GetAllAdvertisments(AdvertisementQuery query)
         {
-            return await _advertismentRepository.GetAllAdvertismentsAsync();
+            return await _advertismentRepository.GetAllAdvertismentsAsync(query);
+        }
+
+        public async Task<Advertisement> UpdateAdvertisement(Guid id, UpdateAdvertisementRequest request)
+        {
+            var existingAdvertisement = await _advertismentRepository.GetAdvertismentByIdAsync(id);
+
+            if (existingAdvertisement == null)
+            {
+                throw new NotFoundException("Advertisement not found.");
+            }
+
+            request.Adapt(existingAdvertisement);
+
+            existingAdvertisement.UpdatedAt = DateTime.UtcNow;
+
+            await _advertismentRepository.SaveAdvertisementAsync();
+            return existingAdvertisement;
+        }
+
+        public async Task DeleteAdvertisement(Guid id)
+        {
+            var existingAd = _advertismentRepository.GetAdvertismentByIdAsync(id);
+
+            if(existingAd == null)
+            {
+                throw new NotFoundException("Advertisement not found.");
+            }
+
+            var deleted = await _advertismentRepository.DeleteAdvertisementAsync(id);
+
+            if (!deleted)
+            {
+                throw new Exception("Failed to delete the advertisement.");
+            }
         }
     }
 }

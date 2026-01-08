@@ -1,4 +1,4 @@
-﻿using Appointly.Domain.Common;
+﻿using Appointly.Domain.Common.Enum;
 using Appointly.Domain.Entities;
 
 namespace Appointly.Application.Services.Advertisment.Contracts

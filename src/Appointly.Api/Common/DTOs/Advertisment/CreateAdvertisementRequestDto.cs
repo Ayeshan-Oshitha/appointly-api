@@ -1,4 +1,4 @@
-﻿using Appointly.Domain.Common;
+﻿using Appointly.Domain.Common.Enum;
 using System.ComponentModel.DataAnnotations;
 
 namespace Appointly.Api.Common.DTOs.Advertisment
