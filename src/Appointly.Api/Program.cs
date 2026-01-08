@@ -3,6 +3,7 @@ using Appointly.Api.Middleware;
 using Appointly.Application;
 using Appointly.Infrastructure;
 using Appointly.Infrastructure.Persistence;
+using Appointly.Infrastructure.Persistence.Seeders;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +60,16 @@ var app = builder.Build();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+
+
+    // Run Seeders
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppointlyDbContext>();
+        await LocationSeeder.SeedAsync(dbContext);
+        await BrandModelSeeder.SeedAsync(dbContext);
+    }
+
     app.Run();
 }
 

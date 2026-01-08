@@ -11,7 +11,11 @@ namespace Appointly.Application.Common.Interfaces.Persistence
         public Task<District?> GetDistrictByIdAsync(Guid districtId);
         public Task<City?> GetCityById(Guid cityId);
         public Task<City> AddCityAsync(City city);
+        public Task<bool> DeleteAsync(Guid cityId);
+        Task<bool> CitySlugExistsAsync(string slug);
         public Task SaveChangesAsync();
+
+        
 
     }
 }

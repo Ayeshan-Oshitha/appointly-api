@@ -6,10 +6,10 @@ namespace Appointly.Api.Common.DTOs.Location
     {
         [MinLength(1)]
         [MaxLength(100)]
-        public required string Name { get; set; }
+        public string? Name { get; set; }
 
-        public required Guid ProvinceId { get; set; }
+        public Guid? ProvinceId { get; set; }
 
-        public required Guid DistrictId { get; set; }
+        public Guid? DistrictId { get; set; }
     }
 }

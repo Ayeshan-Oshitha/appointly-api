@@ -11,6 +11,7 @@ namespace Appointly.Application.Services.Location
         Task<City?> GetCity(Guid cityId);
         Task<City> AddCity(string name, Guid provienceId, Guid districtId);
         Task<City> UpdateCity(Guid cityId, string? name, Guid? provienceId, Guid? districtId);
+        Task DeleteCity(Guid cityId);
 
     }
 }
