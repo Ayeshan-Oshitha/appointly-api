@@ -22,4 +22,8 @@
     <ProjectReference Include="..\Appointly.Domain\Appointly.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>
