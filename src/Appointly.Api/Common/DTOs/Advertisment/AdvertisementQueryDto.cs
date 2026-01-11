@@ -23,6 +23,8 @@ namespace Appointly.Api.Common.DTOs.Advertisment
         public VehicleCondition? VehicleCondition { get; set; }
         public SortBy? SortBy { get; set; }
         public SortOrder? SortOrder { get; set; }
+        public int? Page { get; set; }
+        public int? PageSize { get; set; }
         public Guid? BrandId { get; set; }
         public Guid? ModelId { get; set; }
         public Guid? CityId { get; set; }
