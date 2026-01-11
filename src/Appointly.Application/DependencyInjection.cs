@@ -1,4 +1,6 @@
-﻿using Appointly.Application.Services.Authentication;
+﻿using Appointly.Application.Services.Advertisements;
+using Appointly.Application.Services.Advertisments;
+using Appointly.Application.Services.Authentication;
 using Appointly.Application.Services.Brands;
 using Appointly.Application.Services.Location;
 using Appointly.Application.Services.Models;
@@ -15,6 +17,8 @@ namespace Appointly.Application
             services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<IModelService, ModelService>();
+            services.AddScoped<IAdvertisementService, AdvertisementService>();
+
             return services;
         }
     }

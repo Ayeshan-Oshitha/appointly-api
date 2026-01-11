@@ -16,6 +16,7 @@ namespace Appointly.Infrastructure.Persistence
         public DbSet<City> Cities { get; set; }
         public DbSet<Brand> Brands { get; set; }
         public DbSet<Model> Models { get; set; }
+        public DbSet<Advertisement> Advertisements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
