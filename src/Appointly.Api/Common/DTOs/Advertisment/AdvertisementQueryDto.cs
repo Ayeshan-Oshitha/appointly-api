@@ -14,15 +14,15 @@ namespace Appointly.Api.Common.DTOs.Advertisment
         public int? MaxEngineCapacity { get; set; }
 
         [EnumDataType(typeof(FuelType))]
-        public FuelType FuelType { get; set; }
+        public FuelType? FuelType { get; set; }
 
         [EnumDataType(typeof(TransmissionType))]
-        public TransmissionType TransmissionType { get; set; }
+        public TransmissionType? TransmissionType { get; set; }
 
         [EnumDataType(typeof(VehicleCondition))]
-        public VehicleCondition VehicleCondition { get; set; }
-        public string? SortBy { get; set; }
-        public string? SortOrder { get; set; }
+        public VehicleCondition? VehicleCondition { get; set; }
+        public SortBy? SortBy { get; set; }
+        public SortOrder? SortOrder { get; set; }
         public Guid? BrandId { get; set; }
         public Guid? ModelId { get; set; }
         public Guid? CityId { get; set; }
@@ -31,6 +31,6 @@ namespace Appointly.Api.Common.DTOs.Advertisment
         public bool? IsBiddable { get; set; }
 
         [EnumDataType(typeof(AdStatus))]
-        public AdStatus Status { get; set; }
+        public AdStatus? Status { get; set; }
     }
 }
