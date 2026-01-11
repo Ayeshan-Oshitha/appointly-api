@@ -15,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 {
     builder.Services.AddControllers()
+        // Configure JSON options to serialize enums as strings
         .AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.Converters.Add(
