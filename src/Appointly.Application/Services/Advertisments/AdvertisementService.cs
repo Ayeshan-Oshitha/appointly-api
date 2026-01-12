@@ -68,7 +68,7 @@ namespace Appointly.Application.Services.Advertisments
 
         public async Task DeleteAdvertisement(Guid id)
         {
-            var existingAd = _advertismentRepository.GetAdvertismentByIdAsync(id);
+            var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(id);
 
             if(existingAd == null)
             {

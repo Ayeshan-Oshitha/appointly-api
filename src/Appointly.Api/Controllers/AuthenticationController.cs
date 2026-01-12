@@ -26,7 +26,9 @@ namespace Appointly.Api.Controllers
                 requestDto.FirstName,
                 requestDto.LastName,
                 requestDto.Email,
-                requestDto.Password);
+                requestDto.Password,
+                requestDto.PhoneNumber
+                );
 
             var responseDto = _mapper.Map<RegisterResponseDto>(registerResult);
             return Ok(responseDto);

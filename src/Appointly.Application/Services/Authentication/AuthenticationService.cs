@@ -15,21 +15,21 @@ namespace Appointly.Application.Services.Authentication
             _jwtTokenGenerator = jwtTokenGenerator;
             _userRepository = userRepository;
         }
-        public async Task<RegisterResponse> Register(string firstName, string lastName, string email, string password)
+        public async Task<RegisterResponse> Register(string firstName, string lastName, string email, string password, string phoneNumber)
         {
             var existingUser = await _userRepository.GetUserByEmailAsync(email);
             if (existingUser != null)
             {
                 throw new ConflictException("User with this email already exists.");
             }
-            var newUser = await _userRepository.AddUserAsync(firstName, lastName, email.ToLower(), password);
+            var newUser = await _userRepository.AddUserAsync(firstName, lastName, email.ToLower(), password, phoneNumber);
 
             return new RegisterResponse
             {
                 UserId = newUser.Id,
                 FirstName = newUser.FirstName,
                 LastName = newUser.LastName,
-                Email = newUser.Email
+                Email = "dummyuser@email.com"
             };
 
         }
@@ -39,23 +39,23 @@ namespace Appointly.Application.Services.Authentication
 
             var existingUser = await _userRepository.GetUserByEmailAsync(email);
 
-            if (existingUser == null || existingUser.PasswordHash != password)
-            {
-                throw new UnauthorizedException("Invalid email or password.");
+            //if (existingUser == null || existingUser.PasswordHash != password)
+            //{
+            //    throw new UnauthorizedException("Invalid email or password.");
 
-            }
+            //}
 
             return new LoginResponse
             {
                 UserId = existingUser.Id,
                 FirstName = existingUser.FirstName,
                 LastName = existingUser.LastName,
-                Email = existingUser.Email,
+                Email = "dummyuser@email.com",
                 Token = _jwtTokenGenerator.GenerateAccessToken(
                     existingUser.Id,
                     existingUser.FirstName,
                     existingUser.LastName,
-                    existingUser.Email)
+                    "dummyuser@email.com")
             };
         }
 

@@ -1,31 +1,41 @@
-﻿namespace Appointly.Domain.Entities
+﻿
+namespace Appointly.Domain.Entities
 {
     public class User
     {
         public Guid Id { get; private set; }
+        public Guid IdentityUserId { get; private set; }
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
-        public string Email { get; private set; }
-        public string PasswordHash { get; private set; }
+        public string PhoneNumber { get; private set; }
+        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; private set; }
 
         private User() { }
 
-        public User(string firstName, string lastName, string email, string passwordHash)
+        public User(
+            Guid identityUserId,
+            string firstName,
+            string lastName,
+            string phoneNumber
+            )
         {
             Id = Guid.NewGuid();
+            IdentityUserId = identityUserId;
             FirstName = firstName;
             LastName = lastName;
-            Email = email.ToLower();
-            PasswordHash = passwordHash;
+            PhoneNumber = phoneNumber;
         }
 
-        public void UpdatePassword(string newPasswordHash)
+        public void UpdateProfile(
+            string firstName,
+            string lastName,
+            string phoneNumber)
         {
-            if(string.IsNullOrWhiteSpace(newPasswordHash))
-            {
-                throw new ArgumentException("New password hash cannot be null or empty.");
-            }
-            PasswordHash = newPasswordHash;
+            FirstName = firstName;
+            LastName = lastName;
+            PhoneNumber = phoneNumber;
+            UpdatedAt = DateTime.UtcNow;
         }
     }
 }
