@@ -1,3 +1,4 @@
+using Appointly.Api;
 using Appointly.Api.Common.Mapping;
 using Appointly.Api.Middleware;
 using Appointly.Application;
@@ -26,6 +27,7 @@ var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddMappings();
 
+    builder.Services.AddPresentationServices();
     builder.Services.AddApplicationService();
     builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -35,7 +37,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    
 }
 
 var app = builder.Build();
