@@ -1,8 +1,11 @@
 ﻿using Appointly.Api.Common.DTOs.Authentication;
 using Appointly.Application.Services.Authentication;
+using Appointly.Domain.Entities;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Appointly.Api.Controllers
 {
@@ -43,6 +46,13 @@ namespace Appointly.Api.Controllers
 
             var responseDto = _mapper.Map<LoginResponseDto>(loginResult);
             return Ok(responseDto);
+        }
+
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            
         }
 
     }

@@ -39,8 +39,9 @@ namespace Appointly.Application.Services.Authentication
 
             var existingUser = await _userRepository.IsPasswordValid(email.ToLower(), password);
 
-            var token = _jwtTokenGenerator.GenerateAccessToken(
+            var token = await _jwtTokenGenerator.GenerateAccessToken(
                 existingUser.Id,
+                existingUser.IdentityUserId,
                 existingUser.FirstName,
                 existingUser.LastName,
                 email.ToLower());

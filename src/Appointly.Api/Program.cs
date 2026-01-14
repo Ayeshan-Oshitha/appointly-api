@@ -37,7 +37,6 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
     builder.Services.AddEndpointsApiExplorer();
-    
 }
 
 var app = builder.Build();

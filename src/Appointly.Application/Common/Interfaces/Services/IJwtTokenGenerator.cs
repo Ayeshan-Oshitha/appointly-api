@@ -2,6 +2,6 @@
 {
     public interface IJwtTokenGenerator
     {
-        string GenerateAccessToken(Guid userId, string firstName, string lastName, string email);
+        Task<string> GenerateAccessToken(Guid userId, Guid identityUserId, string firstName, string lastName, string email);
     }
 }

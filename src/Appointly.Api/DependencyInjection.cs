@@ -30,7 +30,7 @@ namespace Appointly.Api
                     Scheme = JwtBearerDefaults.AuthenticationScheme,
                     In = ParameterLocation.Header,
                     BearerFormat = "JWT",
-                    Description = "Enter JWT token like: Bearer {your-token}"
+                    Description = "Enter JWT token like: {your-token}"
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
