@@ -7,5 +7,6 @@ namespace Appointly.Application.Common.Interfaces.Persistence
     {
         Task<User?> GetUserByEmailAsync(string email);
         Task<User> AddUserAsync(string firstName, string lastName, string email, string password, string phoneNumber);
+        Task<User> IsPasswordValid(string email, string password);
     }
 }

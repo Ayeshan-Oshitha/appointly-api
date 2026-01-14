@@ -1,4 +1,5 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
 using Appointly.Infrastructure.Identity;
@@ -36,6 +37,13 @@ namespace Appointly.Infrastructure.Persistence.Repositories
                     throw new Exception(result.Errors.First().Description);
                 }
 
+                var roleResult = await _userManager.AddToRoleAsync(identityUser, Roles.User);
+
+                if (!roleResult.Succeeded)
+                {
+                    throw new Exception(roleResult.Errors.First().Description);
+                }
+
                 var user = new User(
                 identityUser.Id,
                 firstName,
@@ -60,9 +68,41 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            //var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email.ToLower());
-            //return user;
-            throw new NotImplementedException();
+            var identityUser = await _userManager.FindByEmailAsync(email);
+
+            if (identityUser == null)
+            {
+                return null;
+            }
+
+            return await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUser.Id);
+        }
+
+
+        public async Task<User> IsPasswordValid(string email, string password)
+        {
+            var identityUser = await _userManager.FindByEmailAsync(email);
+
+            if (identityUser == null)
+            {
+                throw new UnauthorizedException("Invalid email or password.");
+            }
+
+            var isPasswordValid = await _userManager.CheckPasswordAsync(identityUser, password);
+
+            if (!isPasswordValid)
+            {
+                throw new UnauthorizedException("Invalid email or password.");
+            }
+
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUser.Id);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User not found.");
+            }
+
+            return user;
         }
     }
 }

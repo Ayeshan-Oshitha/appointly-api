@@ -29,7 +29,7 @@ namespace Appointly.Application.Services.Authentication
                 UserId = newUser.Id,
                 FirstName = newUser.FirstName,
                 LastName = newUser.LastName,
-                Email = "dummyuser@email.com"
+                Email = email
             };
 
         }
@@ -37,25 +37,22 @@ namespace Appointly.Application.Services.Authentication
         public async Task<LoginResponse> Login(string email, string password)
         {
 
-            var existingUser = await _userRepository.GetUserByEmailAsync(email);
+            var existingUser = await _userRepository.IsPasswordValid(email.ToLower(), password);
 
-            //if (existingUser == null || existingUser.PasswordHash != password)
-            //{
-            //    throw new UnauthorizedException("Invalid email or password.");
+            var token = _jwtTokenGenerator.GenerateAccessToken(
+                existingUser.Id,
+                existingUser.FirstName,
+                existingUser.LastName,
+                email.ToLower());
 
-            //}
 
             return new LoginResponse
             {
                 UserId = existingUser.Id,
                 FirstName = existingUser.FirstName,
                 LastName = existingUser.LastName,
-                Email = "dummyuser@email.com",
-                Token = _jwtTokenGenerator.GenerateAccessToken(
-                    existingUser.Id,
-                    existingUser.FirstName,
-                    existingUser.LastName,
-                    "dummyuser@email.com")
+                Email = email.ToLower(),
+                Token = token
             };
         }
 
