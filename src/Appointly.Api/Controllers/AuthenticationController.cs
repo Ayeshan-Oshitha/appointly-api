@@ -1,4 +1,5 @@
-﻿using Appointly.Api.Common.DTOs.Authentication;
+﻿using Appointly.Api.Common.DTOs.Admin;
+using Appointly.Api.Common.DTOs.Authentication;
 using Appointly.Application.Services.Authentication;
 using Appointly.Domain.Entities;
 using MapsterMapper;
@@ -37,6 +38,7 @@ namespace Appointly.Api.Controllers
             return Ok(responseDto);
         }
 
+
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequestDto requestDto)
         {
@@ -48,11 +50,13 @@ namespace Appointly.Api.Controllers
             return Ok(responseDto);
         }
 
+
         [Authorize]
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
-            
+            var profile = await _authenticationService.GetCurrentUserProfile();
+            return Ok(_mapper.Map<UserResponseDto>(profile));
         }
 
     }

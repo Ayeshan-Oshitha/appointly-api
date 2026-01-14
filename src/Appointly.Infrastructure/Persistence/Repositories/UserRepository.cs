@@ -1,4 +1,5 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.Services.Admin.Contracts;
 using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
@@ -78,7 +79,6 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUser.Id);
         }
 
-
         public async Task<User> IsPasswordValid(string email, string password)
         {
             var identityUser = await _userManager.FindByEmailAsync(email);
@@ -103,6 +103,35 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             }
 
             return user;
+        }
+
+        public async Task<UserResponse> GetUserProfileByIdAsync(Guid userId)
+        {
+            var domainUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (domainUser == null)
+            {
+                throw new NotFoundException("User not found.");
+            }
+
+            var identityUser = await _userManager.FindByIdAsync(domainUser.IdentityUserId.ToString());
+
+            if (identityUser == null)
+            {
+                throw new NotFoundException("User not found.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(identityUser);
+
+            return new UserResponse
+            {
+                Id = domainUser.Id,
+                FirstName = domainUser.FirstName,
+                LastName = domainUser.LastName,
+                Email = identityUser.Email,
+                PhoneNumber = identityUser.PhoneNumber,
+                Roles = roles.ToList()
+            };
         }
     }
 }

@@ -1,8 +1,9 @@
-﻿using Appointly.Application.Common.Interfaces.Persistence;
+﻿using Appointly.Application.Common.CurrentUser;
+using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.Common.Interfaces.Services;
+using Appointly.Application.Services.Admin.Contracts;
 using Appointly.Application.Services.Authentication.Contracts;
 using Appointly.Domain.Infrastructure.Exceptions;
-
 
 namespace Appointly.Application.Services.Authentication
 {
@@ -10,10 +11,15 @@ namespace Appointly.Application.Services.Authentication
     {
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUserRepository _userRepository;
-        public AuthenticationService(IJwtTokenGenerator jwtTokenGenerator, IUserRepository userRepository)
+        private readonly ICurrentUser _currentUser;
+        public AuthenticationService(
+            IJwtTokenGenerator jwtTokenGenerator,
+            IUserRepository userRepository,
+            ICurrentUser currentUser)
         {
             _jwtTokenGenerator = jwtTokenGenerator;
             _userRepository = userRepository;
+            _currentUser = currentUser;
         }
         public async Task<RegisterResponse> Register(string firstName, string lastName, string email, string password, string phoneNumber)
         {
@@ -57,6 +63,11 @@ namespace Appointly.Application.Services.Authentication
             };
         }
 
-       
+        public async Task<UserResponse> GetCurrentUserProfile()
+        {
+            var userId = _currentUser.Id;
+            var userProfile = await _userRepository.GetUserProfileByIdAsync(userId);
+            return userProfile;
+        }
     }
 }
