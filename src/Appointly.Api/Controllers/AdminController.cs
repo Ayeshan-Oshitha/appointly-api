@@ -1,6 +1,8 @@
 ﻿using Appointly.Api.Common.DTOs.Admin;
 using Appointly.Application.Services.Admin;
+using Appointly.Domain.Common.Constants;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +10,7 @@ namespace Appointly.Api.Controllers
 {
     [Route("admin")]
     [ApiController]
+    [Authorize(Roles = Roles.Admin)]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
@@ -18,11 +21,33 @@ namespace Appointly.Api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
+        [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _adminService.GetAllUsers();
             return Ok(_mapper.Map<List<UserResponseDto>>(users));
+        }
+
+        [HttpPost("PromoteToAdmin")]
+        public async Task<IActionResult> PromoteToAdmin([FromQuery] Guid userId)
+        {
+            var isAdmin = await _adminService.PromoteToAdmin(userId);
+            if (isAdmin)
+            {
+                return Ok("User Promoted to Admin");
+            }
+            return BadRequest("User couldn't Promote to Admin");
+        }
+
+        [HttpPost("PromoteToSeller")]
+        public async Task<IActionResult> PromoteToSeller([FromQuery] Guid userId)
+        {
+            var isSeller = await _adminService.PromoteToAdmin(userId);
+            if (isSeller)
+            {
+                return Ok("User Promoted to Admin");
+            }
+            return BadRequest();
         }
     }
 }

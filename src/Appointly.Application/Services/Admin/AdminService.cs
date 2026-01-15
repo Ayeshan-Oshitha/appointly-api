@@ -14,5 +14,15 @@ namespace Appointly.Application.Services.Admin
         {
             return await _adminRepository.GetAllUsersAsync();
         }
+
+        public Task<bool> PromoteToAdmin(Guid userId)
+        {
+            return _adminRepository.PromoteToAdminAsync(userId);
+        }
+
+        public Task<bool> PromoteToSeller(Guid userId)
+        {
+            return _adminRepository.PromoteToSellerAsync(userId);
+        }
     }
 }
