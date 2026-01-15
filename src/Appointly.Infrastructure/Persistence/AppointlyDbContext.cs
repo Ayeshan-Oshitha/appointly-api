@@ -1,9 +1,11 @@
 ﻿using Appointly.Domain.Entities;
+using Appointly.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Appointly.Infrastructure.Persistence
 {
-    public class AppointlyDbContext : DbContext
+    public class AppointlyDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
         public AppointlyDbContext(DbContextOptions<AppointlyDbContext> options)
             : base(options)

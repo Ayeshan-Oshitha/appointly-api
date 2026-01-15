@@ -1,11 +1,14 @@
+using Appointly.Api;
 using Appointly.Api.Common.Mapping;
 using Appointly.Api.Middleware;
 using Appointly.Application;
 using Appointly.Infrastructure;
+using Appointly.Infrastructure.Identity;
 using Appointly.Infrastructure.Persistence;
 using Appointly.Infrastructure.Persistence.Seeders;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
@@ -24,30 +27,16 @@ var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddMappings();
 
+    builder.Services.AddPresentationServices();
     builder.Services.AddApplicationService();
-    builder.Services.AddInfrastructureServices();
+    builder.Services.AddInfrastructureServices(builder.Configuration);
 
     builder.Services.AddDbContext<AppointlyDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         );
-
-    builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
-        options => options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = "Appointly",
-            ValidAudience = "AppointlyUsers",
-            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("jshhdgshskdndHHYYnsddfdjf76474734854546kfg"))
-        }
-        );
-
     builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
 }
 
 var app = builder.Build();
@@ -72,8 +61,13 @@ var app = builder.Build();
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<AppointlyDbContext>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+
         await LocationSeeder.SeedAsync(dbContext);
         await BrandModelSeeder.SeedAsync(dbContext);
+        await AdvertismentSeeder.SeedAsync(dbContext);
+
+        await RoleSeeder.SeedAsync(roleManager);
     }
 
     app.Run();

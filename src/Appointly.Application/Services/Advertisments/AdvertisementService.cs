@@ -12,12 +12,17 @@ namespace Appointly.Application.Services.Advertisments
     {
 
         private readonly IAdvertismentRepository _advertismentRepository;
-        public AdvertisementService(IAdvertismentRepository advertismentRepository)
+        private readonly IModelRepository _modelRepository;
+        public AdvertisementService(IAdvertismentRepository advertismentRepository, IModelRepository modelRepository)
         {
             _advertismentRepository = advertismentRepository;
+            _modelRepository = modelRepository;
         }
         public async Task<Advertisement> AddAdvertisment(CreateAdvertisementRequest request)
         {
+
+            await ValidateBrandModelRelationship(request.ModelId, request.BrandId);
+
             var advertisment = new Advertisement
             {
                 Title = request.Title,
@@ -68,7 +73,7 @@ namespace Appointly.Application.Services.Advertisments
 
         public async Task DeleteAdvertisement(Guid id)
         {
-            var existingAd = _advertismentRepository.GetAdvertismentByIdAsync(id);
+            var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(id);
 
             if(existingAd == null)
             {
@@ -80,6 +85,22 @@ namespace Appointly.Application.Services.Advertisments
             if (!deleted)
             {
                 throw new Exception("Failed to delete the advertisement.");
+            }
+        }
+
+
+        private async Task ValidateBrandModelRelationship(Guid modelId, Guid brandId)
+        {
+            var model = await _modelRepository.GetModelByIdAsync(modelId);
+
+            if (model == null)
+            {
+                throw new NotFoundException("Model does not exist.");
+            }
+
+            if (model.BrandId != brandId)
+            {
+                throw new BadRequestException("Model does not belong to the specified brand.");
             }
         }
     }

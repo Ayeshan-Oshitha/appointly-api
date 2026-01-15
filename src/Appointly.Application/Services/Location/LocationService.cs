@@ -44,7 +44,7 @@ namespace Appointly.Application.Services.Location
 
         public async Task<City> AddCity(string name, Guid provienceId, Guid districtId)
         {
-            await ValidatePerovienceDistrictRelationship(districtId, provienceId);
+            await ValidateProvinceDistrictRelationship(districtId, provienceId);
 
             var city = new City
             {
@@ -75,7 +75,7 @@ namespace Appointly.Application.Services.Location
             var newProvinceId = provienceId ?? existingCity.ProvinceId;
             var newDistrictId = districtId ?? existingCity.DistrictId;
 
-            await ValidatePerovienceDistrictRelationship(newDistrictId, newProvinceId);
+            await ValidateProvinceDistrictRelationship(newDistrictId, newProvinceId);
 
             if (!string.IsNullOrEmpty(name))
             {
@@ -110,7 +110,7 @@ namespace Appointly.Application.Services.Location
         }
 
 
-        private async Task ValidatePerovienceDistrictRelationship(Guid districtId, Guid provienceId)
+        private async Task ValidateProvinceDistrictRelationship(Guid districtId, Guid provienceId)
         {
             var district = await _locationRepository.GetDistrictByIdAsync(districtId);
             if (district == null)

@@ -1,7 +1,8 @@
 ﻿using Appointly.Api.Common.DTOs.Brands;
 using Appointly.Application.Services.Brands;
-using Appointly.Domain.Entities;
+using Appointly.Domain.Common.Constants;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +10,7 @@ namespace Appointly.Api.Controllers
 {
     [Route("brand")]
     [ApiController]
+    [Authorize(Roles = Roles.User)]
     public class BrandController : ControllerBase
     {
         private readonly IMapper _mapper;

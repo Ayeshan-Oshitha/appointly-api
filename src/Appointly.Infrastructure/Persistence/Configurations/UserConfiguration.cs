@@ -1,4 +1,5 @@
 ﻿using Appointly.Domain.Entities;
+using Appointly.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,6 +14,17 @@ namespace Appointly.Infrastructure.Persistence.Configurations
 
             builder.HasKey(u => u.Id);
 
+            builder.Property(u => u.IdentityUserId)
+                .IsRequired();
+
+            builder.HasIndex(u => u.IdentityUserId)
+                .IsUnique();
+
+            builder.HasOne<ApplicationUser>()
+                .WithOne()
+                .HasForeignKey<User>(u => u.IdentityUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Property(u => u.FirstName)
                 .IsRequired()
                 .HasMaxLength(100);
@@ -20,17 +32,6 @@ namespace Appointly.Infrastructure.Persistence.Configurations
             builder.Property(u => u.LastName)
                 .IsRequired()
                 .HasMaxLength(100);
-
-            builder.Property(u => u.Email)
-                .IsRequired()
-                .HasMaxLength(255);
-
-            builder.Property(u => u.PasswordHash)
-                .IsRequired()
-                .HasMaxLength(512);
-
-            builder.HasIndex(u => u.Email)
-                .IsUnique();
         }
     }
 }
