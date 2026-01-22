@@ -31,6 +31,7 @@ namespace Appointly.Infrastructure
             services.AddScoped<IModelRepository, ModelRepository>();
             services.AddScoped<IAdvertismentRepository, AdvertisementRepository>();
             services.AddScoped<IAdminRepository, AdminRepository>();
+            services.AddScoped<IRoleChangeRepository,RoleChangeRepository>();
 
             services.AddIdentityCore<ApplicationUser>()
                 .AddRoles<ApplicationRole>()

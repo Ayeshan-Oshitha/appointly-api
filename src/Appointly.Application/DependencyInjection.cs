@@ -6,6 +6,7 @@ using Appointly.Application.Services.Authentication;
 using Appointly.Application.Services.Brands;
 using Appointly.Application.Services.Location;
 using Appointly.Application.Services.Models;
+using Appointly.Application.Services.RoleChange;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -21,6 +22,7 @@ namespace Appointly.Application
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IAdvertisementService, AdvertisementService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IRoleChangeService, RoleChangeService>();
 
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUser, CurrentUser>();
