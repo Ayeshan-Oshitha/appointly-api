@@ -151,7 +151,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
             // Pagination
             var page = query.Page ?? 1;
-            var pageSize = query.PageSize ?? 10;
+            var pageSize = Math.Clamp(query.PageSize ?? 10, 1, 100);
 
             q = q.Skip((page - 1) * pageSize).Take(pageSize);
 

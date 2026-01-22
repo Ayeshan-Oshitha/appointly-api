@@ -1,6 +1,8 @@
 ﻿
 using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.Services.RoleChange.Contracts;
 using Appointly.Domain.Common.Constants;
+using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
 
 namespace Appointly.Application.Services.RoleChange
@@ -30,6 +32,11 @@ namespace Appointly.Application.Services.RoleChange
 
 
             await _roleChangeRepository.AddRoleChangeRequestAsync(userId, newRole);
+        }
+
+        public async Task<List<RoleChangeRequest>> GetAllRequests(RoleChangeRequestQuery query)
+        {
+            return await _roleChangeRepository.GetAllRequestsAsync(query);
         }
     }
 }

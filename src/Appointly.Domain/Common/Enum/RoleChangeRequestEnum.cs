@@ -6,4 +6,15 @@
         Approved,
         Rejected
     }
+
+    public enum RoleChangeSortBy
+    {
+        CreatedAt,
+        FirstName,
+    }
+    public enum RoleChangeSortOrder
+    {
+        Asc,
+        Desc
+    }
 }

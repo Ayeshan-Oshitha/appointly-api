@@ -1,5 +1,9 @@
 ﻿using Appointly.Api.Common.DTOs.RoleChangeRequest;
 using Appointly.Application.Services.RoleChange;
+using Appointly.Application.Services.RoleChange.Contracts;
+using Appointly.Domain.Common.Constants;
+using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +14,11 @@ namespace Appointly.Api.Controllers
     public class RoleChangeController : ControllerBase
     {
         private readonly IRoleChangeService _roleChangeService;
-        public RoleChangeController(IRoleChangeService roleChangeService)
+        private readonly IMapper _mapper;
+        public RoleChangeController(IRoleChangeService roleChangeService, IMapper mapper)
         {
             _roleChangeService = roleChangeService;
+            _mapper = mapper;
         }
 
         [HttpPost("change")]
@@ -22,6 +28,12 @@ namespace Appointly.Api.Controllers
             return Ok("Role Changed requested Succesfully");
         }
 
-
+        [HttpGet]
+        [Authorize(Roles = Roles.Admin)]
+        public async Task<IActionResult> GetAllRequests([FromQuery] RoleChangeRequestQueryDto queryDto)
+        {
+            var results = await _roleChangeService.GetAllRequests(_mapper.Map<RoleChangeRequestQuery>(queryDto));
+            return Ok(_mapper.Map<List<RoleChangeResponseDto>>(results));
+        }
     }
 }
