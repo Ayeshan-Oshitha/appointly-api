@@ -29,9 +29,9 @@ namespace Appointly.Api.Controllers
         }
 
         [HttpPost("PromoteToAdmin")]
-        public async Task<IActionResult> PromoteToAdmin([FromQuery] Guid userId)
+        public async Task<IActionResult> PromoteToAdmin([FromQuery] Guid userId, Guid changeRoleRequestId)
         {
-            var isAdmin = await _adminService.PromoteToAdmin(userId);
+            var isAdmin = await _adminService.PromoteToAdmin(userId, changeRoleRequestId);
             if (isAdmin)
             {
                 return Ok("User Promoted to Admin");
@@ -48,6 +48,20 @@ namespace Appointly.Api.Controllers
                 return Ok("User Promoted to Admin");
             }
             return BadRequest();
+        }
+
+        [HttpPost("RejectPromoteRequest")]
+        public async Task<IActionResult> RejectPromoteRequest(
+            [FromQuery] Guid userId,
+            Guid changeRoleRequestId,
+            [FromBody] RejectPromoteRequestDto requestDto)
+        {
+            var isRejected = await _adminService.RejectPromoteRequest(userId, changeRoleRequestId, requestDto.RejectReason);
+            if (isRejected)
+            {
+                return Ok("Role change request rejected successfully.");
+            }
+            return BadRequest("Failed to reject the role change request.");
         }
     }
 }

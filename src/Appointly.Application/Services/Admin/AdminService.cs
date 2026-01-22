@@ -2,6 +2,7 @@
 using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.Services.Admin.Contracts;
 using Appointly.Domain.Common.Enum;
+using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
 
 namespace Appointly.Application.Services.Admin
@@ -22,9 +23,28 @@ namespace Appointly.Application.Services.Admin
             return await _adminRepository.GetAllUsersAsync();
         }
 
-        public async Task<bool> PromoteToAdmin(Guid userId)
+        public async Task<bool> PromoteToAdmin(Guid userId, Guid changeRoleRequestId)
         {
-            return await _adminRepository.PromoteToAdminAsync(userId);
+            var request = await _roleChangeRepository.GetRoleChangeRequestByIdAsync(changeRoleRequestId);
+
+            if (request == null)
+            {
+                throw new NotFoundException("Not found the request");
+            }
+
+            if (request.Status != RoleRequestTypes.Pending)
+            {
+                throw new BadRequestException("The request is already processed");
+            }
+
+            if (request.UserId != userId)
+            {
+                throw new BadRequestException("The request does not belong to the specified user");
+            }
+
+            var currentUserId = _currentUser.Id;
+
+            return await _adminRepository.PromoteToAdminAsync(userId, changeRoleRequestId, currentUserId);
         }
 
         public async Task<bool> PromoteToSeller(Guid userId, Guid changeRoleRequestId)
@@ -36,7 +56,7 @@ namespace Appointly.Application.Services.Admin
                 throw new NotFoundException("Not found the request");
             }
 
-            if(request.Status != RoleRequestTypes.Pending)
+            if (request.Status != RoleRequestTypes.Pending)
             {
                 throw new BadRequestException("The request is already processed");
             }
@@ -49,6 +69,30 @@ namespace Appointly.Application.Services.Admin
             var currentUserId = _currentUser.Id;
 
             return await _adminRepository.PromoteToSellerAsync(userId, changeRoleRequestId, currentUserId);
+        }
+
+        public async Task<bool> RejectPromoteRequest(Guid userId, Guid changeRoleRequestId, string? rejectReason)
+        {
+            var request = await _roleChangeRepository.GetRoleChangeRequestByIdAsync(changeRoleRequestId);
+
+            if (request == null)
+            {
+                throw new NotFoundException("Not found the request");
+            }
+
+            if (request.Status != RoleRequestTypes.Pending)
+            {
+                throw new BadRequestException("The request is already processed");
+            }
+
+            if (request.UserId != userId)
+            {
+                throw new BadRequestException("The request does not belong to the specified user");
+            }
+
+            var currentUserId = _currentUser.Id;
+
+            return await _adminRepository.RejectPromoteRequestAsync(changeRoleRequestId, currentUserId, rejectReason);
         }
     }
 }

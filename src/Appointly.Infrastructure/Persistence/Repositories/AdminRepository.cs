@@ -2,6 +2,7 @@
 using Appointly.Application.Services.Admin.Contracts;
 using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Common.Enum;
+using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
 using Appointly.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -50,9 +51,17 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return result;
         }
 
-        public async Task<bool> PromoteToAdminAsync(Guid userId )
+        public async Task<bool> PromoteToAdminAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId)
         {
+            // Load Request 
+            var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
 
+            if (request == null)
+            {
+                throw new NotFoundException("Role change request not found.");
+            }
+
+            // Load User
             var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
             if (user == null)
@@ -67,18 +76,30 @@ namespace Appointly.Infrastructure.Persistence.Repositories
                 throw new NotFoundException("Identity User not found.");
             }
 
-            if(await _userManager.IsInRoleAsync(identityUser, Roles.User))
+            var currentRoles = await _userManager.GetRolesAsync(identityUser);
+
+            if (currentRoles.Any())
             {
-                var removeResult = await _userManager.RemoveFromRoleAsync(identityUser, Roles.User);
+                var removeResult = await _userManager.RemoveFromRolesAsync(identityUser, currentRoles);
                 if (!removeResult.Succeeded)
                 {
-                    return false;
+                    throw new Exception("Failed to remove existing roles.");
                 }
-
-                var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Admin);
-                return addResult.Succeeded;
             }
-            return false;
+
+            var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Admin);
+            if (!addResult.Succeeded)
+            {
+                throw new Exception("Failed to assign new role.");
+            }
+
+            // Update Role Change Request Status
+            request.Status = RoleRequestTypes.Approved;
+            request.ReviewedByAdminId = currrentUserId;
+            request.ReviewedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId)
@@ -130,6 +151,31 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> RejectPromoteRequestAsync(Guid changeRoleRequestId, Guid currrentUserId, string? rejectReason)
+        {
+            // Load Request 
+            var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
+
+            if (request == null)
+            {
+                throw new NotFoundException("Role change request not found.");
+            }
+
+            request.Status = RoleRequestTypes.Rejected;
+            request.RejectionReason = rejectReason ?? null;
+            request.ReviewedByAdminId = currrentUserId;
+            request.ReviewedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<RoleChangeRequest?> GetExistingPendingRequestsByUserIdAsync(Guid userId)
+        {
+            return await _dbContext.RoleChangeRequests
+                .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == RoleRequestTypes.Pending);
         }
     }
 }
