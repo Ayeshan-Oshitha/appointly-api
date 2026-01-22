@@ -40,9 +40,9 @@ namespace Appointly.Api.Controllers
         }
 
         [HttpPost("PromoteToSeller")]
-        public async Task<IActionResult> PromoteToSeller([FromQuery] Guid userId)
+        public async Task<IActionResult> PromoteToSeller([FromQuery] Guid userId, Guid changeRoleRequestId)
         {
-            var isSeller = await _adminService.PromoteToAdmin(userId);
+            var isSeller = await _adminService.PromoteToSeller(userId, changeRoleRequestId);
             if (isSeller)
             {
                 return Ok("User Promoted to Admin");

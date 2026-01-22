@@ -6,6 +6,6 @@ namespace Appointly.Application.Services.Admin
     {
         Task<List<UserResponse>> GetAllUsers();
         Task<bool> PromoteToAdmin(Guid userId);
-        Task<bool> PromoteToSeller(Guid userId);
+        Task<bool> PromoteToSeller(Guid userId, Guid changeRoleRequestId);
     }
 }

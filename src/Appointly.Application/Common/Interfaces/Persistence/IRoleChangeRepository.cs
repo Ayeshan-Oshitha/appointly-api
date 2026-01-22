@@ -7,5 +7,7 @@ namespace Appointly.Application.Common.Interfaces.Persistence
     {
         Task AddRoleChangeRequestAsync(Guid userId, string newRole);
         Task<List<RoleChangeRequest>> GetAllRequestsAsync(RoleChangeRequestQuery query);
+        Task<RoleChangeRequest?> GetRoleChangeRequestByIdAsync(Guid id);
+        Task<bool> DeleteRoleChangeRequestAsync(Guid id);
     }
 }

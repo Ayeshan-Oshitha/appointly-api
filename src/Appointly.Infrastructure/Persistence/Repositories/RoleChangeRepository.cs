@@ -114,5 +114,24 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
             return await q.ToListAsync();
         }
+
+        public async Task<RoleChangeRequest?> GetRoleChangeRequestByIdAsync(Guid id)
+        {
+            return await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<bool> DeleteRoleChangeRequestAsync(Guid id)
+        {
+            var existingRequest = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == id);
+            
+            if (existingRequest == null)
+            {
+                throw new NotFoundException("Role change request not found.");
+            }
+
+            _dbContext.RoleChangeRequests.Remove(existingRequest);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

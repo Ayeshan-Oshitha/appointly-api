@@ -6,6 +6,6 @@ namespace Appointly.Application.Common.Interfaces.Persistence
     {
         Task<List<UserResponse>> GetAllUsersAsync();
         Task<bool> PromoteToAdminAsync(Guid userId);
-        Task<bool> PromoteToSellerAsync(Guid userId);
+        Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId);
     }
 }

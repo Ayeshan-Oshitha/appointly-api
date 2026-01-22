@@ -1,6 +1,7 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.Services.Admin.Contracts;
 using Appointly.Domain.Common.Constants;
+using Appointly.Domain.Common.Enum;
 using Appointly.Domain.Infrastructure.Exceptions;
 using Appointly.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -27,30 +28,31 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             var domainUsers = await _dbContext.Users
                 .Where(u => identityUserIds.Contains(u.IdentityUserId)).ToListAsync();
 
-            var tasks = identityUsers.Select(async identityUser =>
+            var result = new List<UserResponse>();
+
+            foreach (var identityUser in identityUsers)
             {
                 var domainUser = domainUsers.FirstOrDefault(u => u.IdentityUserId == identityUser.Id);
 
-                var roles = await _userManager.GetRolesAsync(identityUser);
+                var roles = await _userManager.GetRolesAsync(identityUser); // awaited one-by-one
 
-                return new UserResponse
+                result.Add(new UserResponse
                 {
                     Id = domainUser != null ? domainUser.Id : Guid.Empty,
-                    FirstName = domainUser != null ? domainUser.FirstName : null,
-                    LastName = domainUser != null ? domainUser.LastName : null,
+                    FirstName = domainUser?.FirstName,
+                    LastName = domainUser?.LastName,
                     Email = identityUser.Email,
-                    PhoneNumber = domainUser != null ? domainUser.PhoneNumber : null,
+                    PhoneNumber = domainUser?.PhoneNumber,
                     Roles = roles
-                };
-            }).ToList();
+                });
+            }
 
-            var result = await Task.WhenAll(tasks);
-            return result.ToList();
-
+            return result;
         }
 
-        public async Task<bool> PromoteToAdminAsync(Guid userId)
+        public async Task<bool> PromoteToAdminAsync(Guid userId )
         {
+
             var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
             if (user == null)
@@ -79,8 +81,17 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return false;
         }
 
-        public async Task<bool> PromoteToSellerAsync(Guid userId)
+        public async Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId)
         {
+            // Load Request 
+            var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
+
+            if (request == null)
+            {
+                throw new NotFoundException("Role change request not found.");
+            }
+
+            // Load User
             var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
             if (user == null)
@@ -100,12 +111,25 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             if (currentRoles.Any())
             {
                 var removeResult = await _userManager.RemoveFromRolesAsync(identityUser, currentRoles);
-                if (!removeResult.Succeeded)
-                    return false;
+                if (!removeResult.Succeeded) 
+                { 
+                    throw new Exception("Failed to remove existing roles.");
+                }
             }
 
             var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Seller);
-            return addResult.Succeeded;
+            if (!addResult.Succeeded)
+            {
+                throw new Exception("Failed to assign new role.");
+            }
+
+            // Update Role Change Request Status
+            request.Status= RoleRequestTypes.Approved;
+            request.ReviewedByAdminId= currrentUserId;
+            request.ReviewedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }

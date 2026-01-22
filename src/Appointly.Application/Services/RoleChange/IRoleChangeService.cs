@@ -7,5 +7,6 @@ namespace Appointly.Application.Services.RoleChange
     {
         Task AddRoleChangeRequest(Guid userId, string newRole);
         Task<List<RoleChangeRequest>> GetAllRequests(RoleChangeRequestQuery query);
+        Task DeleteRoleChangeRequest(Guid id);
     }
 }

@@ -35,5 +35,12 @@ namespace Appointly.Api.Controllers
             var results = await _roleChangeService.GetAllRequests(_mapper.Map<RoleChangeRequestQuery>(queryDto));
             return Ok(_mapper.Map<List<RoleChangeResponseDto>>(results));
         }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteRoleChangeRequest([FromRoute] Guid id)
+        {
+            await _roleChangeService.DeleteRoleChangeRequest(id);
+            return Ok("Role change request deleted successfully");
+        }
     }
 }
