@@ -133,5 +133,10 @@ namespace Appointly.Infrastructure.Persistence.Repositories
                 Roles = roles.ToList()
             };
         }
+
+        public async Task<bool> UserExistsAsync(Guid userId)
+        {
+            return await _dbContext.Users.AnyAsync(u => u.Id == userId);
+        }
     }
 }
