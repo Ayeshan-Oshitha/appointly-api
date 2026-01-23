@@ -1,4 +1,5 @@
 ﻿using Appointly.Api.Common.DTOs.Admin;
+using Appointly.Api.Common.DTOs.Advertisment;
 using Appointly.Application.Services.Admin;
 using Appointly.Domain.Common.Constants;
 using MapsterMapper;
@@ -62,6 +63,20 @@ namespace Appointly.Api.Controllers
                 return Ok("Role change request rejected successfully.");
             }
             return BadRequest("Failed to reject the role change request.");
+        }
+
+        [HttpPost("advertisement/{advertisementId:guid}/approve")]
+        public async Task<IActionResult> ApproveAdvertisement([FromRoute] Guid advertisementId)
+        {
+            var advertisement = await _adminService.ApproveAdvertisment(advertisementId);
+            return Ok(_mapper.Map<AdvertisementDetailResponseDto>(advertisement));
+        }
+
+        [HttpPost("advertisement/{advertisementId:guid}/reject")]
+        public async Task<IActionResult> RejectAdvertisement([FromRoute] Guid advertisementId, [FromBody] RejectAdvertismentRequestDto requestDto)
+        {
+            var advertisement = await _adminService.RejectAdvertisment(advertisementId, requestDto.RejectReason);
+            return Ok(_mapper.Map<AdvertisementDetailResponseDto>(advertisement));
         }
     }
 }

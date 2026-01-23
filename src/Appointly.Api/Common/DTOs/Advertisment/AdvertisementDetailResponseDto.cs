@@ -27,7 +27,14 @@
 
         public string? ContactName { get; set; } 
         public string? ContactPhone { get; set; } 
-        public string? ContactEmail { get; set; } 
+        public string? ContactEmail { get; set; }
+
+        public string? SellerName { get; set; }
+        public Guid SellerId { get; set; }
+        public string? ReviewerName { get; set; }
+        public Guid? ReviewByAdminId { get; set; }
+        public DateTime? ReviewedAt { get; set; }
+
         public bool? IsHidePhone { get; set; } 
         public bool? IsWhatsapp { get; set; } 
 

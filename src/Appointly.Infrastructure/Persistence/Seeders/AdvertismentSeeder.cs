@@ -29,6 +29,7 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ContactName = "Nimal Perera",
                         ContactPhone = "0771234567",
                         ContactEmail = "nimal@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -47,7 +48,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("d16ea5ee-3c78-4a43-a35d-82aa6bd97d48"), // Civic
                         ContactName = "Kasun Silva",
                         ContactPhone = "0719876543",
-                        ContactEmail = "kasun@gmail.com"
+                        ContactEmail = "kasun@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -66,7 +68,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("ba690cca-aaa8-436e-9e7b-5c858c403101"), // 320i
                         ContactName = "Ruwan Jayasuriya",
                         ContactPhone = "0752233445",
-                        ContactEmail = "ruwan@gmail.com"
+                        ContactEmail = "ruwan@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -85,7 +88,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("4686553d-ec02-4d86-b08e-8b92818eddcd"), // C-Class
                         ContactName = "Sunil Fernando",
                         ContactPhone = "0785566778",
-                        ContactEmail = "sunil@gmail.com"
+                        ContactEmail = "sunil@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -104,7 +108,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("b0b923e4-9f21-4e56-a630-548fd38a7f78"), // Prius
                         ContactName = "Ajith Kumara",
                         ContactPhone = "0768899001",
-                        ContactEmail = "ajith@gmail.com"
+                        ContactEmail = "ajith@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -123,7 +128,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("72a04544-d250-428c-abb6-8b88da4072c6"), // X-Trail
                         ContactName = "Imran Ahamed",
                         ContactPhone = "0723344556",
-                        ContactEmail = "imran@gmail.com"
+                        ContactEmail = "imran@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -142,7 +148,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("e7494b6f-1b1f-4ef2-a6e7-bca69fed5404"), // Land Cruiser
                         ContactName = "Mahesh Bandara",
                         ContactPhone = "0701122334",
-                        ContactEmail = "mahesh@gmail.com"
+                        ContactEmail = "mahesh@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -161,7 +168,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("0659c79d-295b-4ce1-a3ca-fb06dc5acd28"), // Accord
                         ContactName = "Tharindu Madushan",
                         ContactPhone = "0714455667",
-                        ContactEmail = "tharindu@gmail.com"
+                        ContactEmail = "tharindu@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -180,7 +188,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("3ccb8746-eb90-4e55-a694-6c9ad6f309f7"), // Navara
                         ContactName = "Sampath Wijesinghe",
                         ContactPhone = "0779988776",
-                        ContactEmail = "sampath@gmail.com"
+                        ContactEmail = "sampath@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -199,7 +208,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("56395ac6-c798-49ef-9f08-3599aa09419c"), // X5
                         ContactName = "Chaminda Perera",
                         ContactPhone = "0783344556",
-                        ContactEmail = "chaminda@gmail.com"
+                        ContactEmail = "chaminda@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -218,7 +228,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("3fc0fa33-b711-4bee-a9bb-45b50598d79d"), // E-Class
                         ContactName = "Dinesh Rathnayake",
                         ContactPhone = "0761122334",
-                        ContactEmail = "dinesh@gmail.com"
+                        ContactEmail = "dinesh@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -237,7 +248,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("8b62b639-6213-412b-962f-d8635c1869ca"), // Corolla
                         ContactName = "Roshan Fernando",
                         ContactPhone = "0756677889",
-                        ContactEmail = "roshan@gmail.com"
+                        ContactEmail = "roshan@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -256,7 +268,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("ff69ef96-92af-41a0-ab7a-ee7577776c99"), // Sunny
                         ContactName = "Isuru Silva",
                         ContactPhone = "0709988776",
-                        ContactEmail = "isuru@gmail.com"
+                        ContactEmail = "isuru@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -275,7 +288,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("97be0af6-c6c6-41bf-b998-adc234c0f09c"), // M3
                         ContactName = "Shehan Wickramasinghe",
                         ContactPhone = "0724455667",
-                        ContactEmail = "shehan@gmail.com"
+                        ContactEmail = "shehan@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     },
 
                     new Advertisement
@@ -294,7 +308,8 @@ namespace Appointly.Infrastructure.Persistence.Seeders
                         ModelId = Guid.Parse("fddf26ad-a6bc-494f-95f3-cc26b1cbaeae"), // G-Wagon
                         ContactName = "Fazil Rahman",
                         ContactPhone = "0712233445",
-                        ContactEmail = "fazil@gmail.com"
+                        ContactEmail = "fazil@gmail.com",
+                        SellerId = Guid.Parse("e30a0b97-cf20-49f7-86b5-b4afe065f247") // John Doe
                     }
                 };
 

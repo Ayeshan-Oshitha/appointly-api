@@ -71,6 +71,16 @@ namespace Appointly.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
+            builder.HasOne(a => a.Seller)
+                .WithMany()
+                .HasForeignKey(a => a.SellerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(a => a.ReviewByAdmin)
+               .WithMany()
+               .HasForeignKey(a => a.ReviewByAdminId)
+               .OnDelete(DeleteBehavior.Restrict);
+
             builder.Property(a => a.Status)
                 .IsRequired()
                 .HasConversion<int>();
@@ -81,6 +91,8 @@ namespace Appointly.Infrastructure.Persistence.Configurations
             builder.HasIndex(a => a.BrandId);
             builder.HasIndex(a => a.ModelId);
             builder.HasIndex(a => a.CityId);
+            builder.HasIndex(a => a.SellerId);
+            builder.HasIndex(a => a.ReviewByAdminId);
         }
     }
 }

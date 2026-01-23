@@ -29,13 +29,18 @@ namespace Appointly.Domain.Entities
         public bool IsHidePhone { get; set; } = false;
         public bool? IsWhatsapp { get; set; } = false;
 
-        //public Guid SellerId { get; set; }
-        //public Guid AdminId { get; set; }
-        // Add Navigation Property
+        public Guid SellerId { get; set; }
+        public Guid? ReviewByAdminId { get; set; }
+        public DateTime? ReviewedAt { get; set; }
 
         public bool IsBiddable { get; set; } = false;
         public AdStatus Status { get; set; } = AdStatus.Pending;
         public bool IsDeleted { get; set; } = false;
         public string? RejectedReason { get; set; }
+
+
+        // Add Navigation Property
+        public User? Seller { get; set; }
+        public User? ReviewByAdmin { get; set; }
     }
 }

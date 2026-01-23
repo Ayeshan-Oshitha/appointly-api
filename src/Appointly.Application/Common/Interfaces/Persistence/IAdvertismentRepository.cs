@@ -10,5 +10,6 @@ namespace Appointly.Application.Common.Interfaces.Persistence
         Task<List<Advertisement>> GetAllAdvertismentsAsync(AdvertisementQuery query);
         Task<bool> DeleteAdvertisementAsync(Guid id);
         public Task SaveAdvertisementAsync();
+        
     }
 }
