@@ -12,5 +12,6 @@ namespace Appointly.Application.Services.Admin
         Task<Advertisement> ApproveAdvertisment(Guid AdvertismentId);
         Task<Advertisement> RejectAdvertisment(Guid AdvertismentId, string? reason);
         Task<Advertisement> BlockAdvertisment(Guid AdvertismentId);
+        Task<Advertisement> UndoAdvertismentReview(Guid AdvertismentId);
     }
 }

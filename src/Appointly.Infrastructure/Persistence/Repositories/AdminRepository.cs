@@ -217,5 +217,23 @@ namespace Appointly.Infrastructure.Persistence.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public async Task<Advertisement> UndoAdvertismentReviewAsync(Guid AdvertismentId)
+        {
+            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertismentId);
+
+            if (existingAd == null)
+            {
+                throw new NotFoundException("Advertisement not found.");
+            }
+
+            existingAd.Status = AdStatus.Pending;
+            existingAd.RejectedReason = null;
+            existingAd.ReviewByAdminId = null;
+            existingAd.ReviewedAt = null;
+
+            await _dbContext.SaveChangesAsync();
+            return existingAd;
+        }
     }
 }

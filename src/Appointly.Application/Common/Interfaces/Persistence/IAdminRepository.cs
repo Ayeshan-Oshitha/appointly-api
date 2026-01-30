@@ -14,5 +14,6 @@ namespace Appointly.Application.Common.Interfaces.Persistence
         Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertismentId, Guid currentUserId);
         Task<Advertisement> RejectAdvertisementAsync(Guid AdvertismentId, Guid currentUserId, string? reason);
         Task<Advertisement> BlockAdvertisementAsync(Guid AdvertismentId, Guid currentUserId, string? reason);
+        Task<Advertisement> UndoAdvertismentReviewAsync(Guid AdvertismentId);
     }
 }

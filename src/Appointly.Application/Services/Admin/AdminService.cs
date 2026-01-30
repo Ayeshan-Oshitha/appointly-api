@@ -142,8 +142,22 @@ namespace Appointly.Application.Services.Admin
             throw new NotImplementedException();
         }
 
-       
+        public async Task<Advertisement> UndoAdvertismentReview(Guid AdvertismentId)
+        {
+            var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(AdvertismentId);
 
-       
+            if (existingAd == null)
+            {
+                throw new NotFoundException("Advertisement not found");
+            }
+
+            if (existingAd.Status == AdStatus.Pending)
+            {
+                throw new BadRequestException("Advertisement is already in pending ");
+            }
+
+            await _adminRepository.UndoAdvertismentReviewAsync(AdvertismentId);
+            return existingAd;
+        }
     }
 }
