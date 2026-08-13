@@ -1,7 +1,7 @@
 ﻿using Appointly.Application.Common.CurrentUser;
+using Appointly.Application.Common.Mapping;
 using Appointly.Application.Services.Admin;
 using Appointly.Application.Services.Advertisements;
-using Appointly.Application.Services.Advertisments;
 using Appointly.Application.Services.Authentication;
 using Appointly.Application.Services.Brands;
 using Appointly.Application.Services.Location;
@@ -26,6 +26,8 @@ namespace Appointly.Application
 
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUser, CurrentUser>();
+
+            services.AddMappings();
 
             return services;
         }

@@ -1,12 +1,12 @@
-﻿using Appointly.Domain.Entities;
+﻿using Appointly.Application.DTOs.Model;
 
 namespace Appointly.Application.Services.Models
 {
     public interface IModelService
     {
-        public Task<List<Model>> GetModels(Guid? brandId);
-        public Task<Model> AddModel(string name, Guid brandId);
-        public Task<Model> UpdateModel(Guid modelId, string? name, Guid? brandId);
+        public Task<List<ModelResponseDto>> GetModels(Guid? brandId);
+        public Task<ModelResponseDto> AddModel(CreateModelRequestDto request);
+        public Task<ModelResponseDto> UpdateModel(Guid modelId, UpdateModelRequestDto request);
         public Task DeleteModel(Guid modelId);
     }
 }

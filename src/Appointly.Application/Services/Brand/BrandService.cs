@@ -1,6 +1,8 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.DTOs.Brand;
 using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
+using MapsterMapper;
 
 namespace Appointly.Application.Services.Brands
 {
@@ -8,19 +10,21 @@ namespace Appointly.Application.Services.Brands
     {
         private readonly IBrandRepository _brandRepository;
         private readonly IModelRepository _modelRepository;
+        private readonly IMapper _mapper;
 
-        public BrandService(IBrandRepository brandRepository, IModelRepository modelRepository)
+        public BrandService(IBrandRepository brandRepository, IModelRepository modelRepository, IMapper mapper)
         {
             _brandRepository = brandRepository;
             _modelRepository = modelRepository;
+            _mapper = mapper;
         }
 
-        public async Task<Brand> AddBrand(string name)
+        public async Task<BrandResponseDto> AddBrand(CreateBrandRequestDto request)
         {
             var brand = new Brand
             {
-                Name = name,
-                Slug = name.Trim().ToLower().Replace(" ", "-")
+                Name = request.Name,
+                Slug = request.Name.Trim().ToLower().Replace(" ", "-")
             };
 
             if (await _brandRepository.BrandSlugExistsAsync(brand.Slug))
@@ -29,12 +33,13 @@ namespace Appointly.Application.Services.Brands
             }
 
             var addedBrand =  await _brandRepository.AddBrandAsync(brand);
-            return addedBrand;
+            return _mapper.Map<BrandResponseDto>(addedBrand);
         }
 
-        public async Task<List<Brand>> GetAllBrands()
+        public async Task<List<BrandResponseDto>> GetAllBrands()
         {
-            return await _brandRepository.GetAllBrandsAsync();
+            var brands = await _brandRepository.GetAllBrandsAsync();
+            return _mapper.Map<List<BrandResponseDto>>(brands);
         }
 
         public async Task DeleteBrand(Guid brandId)
@@ -61,19 +66,19 @@ namespace Appointly.Application.Services.Brands
             }
         }
 
-        public async Task<Brand> UpdateBrand(Guid brandId, string name)
+        public async Task<BrandResponseDto> UpdateBrand(Guid brandId, UpdateBrandRequestDto request)
         {
             var existingBrand = await _brandRepository.GetBrandByIdAsync(brandId);
 
             if (existingBrand == null)
             {
-                throw new NotFoundException("Brand not found"); 
+                throw new NotFoundException("Brand not found");
             }
 
-            existingBrand.Name = name;
-            existingBrand.Slug = name.Trim().ToLower().Replace(" ", "-");
+            existingBrand.Name = request.Name;
+            existingBrand.Slug = request.Name.Trim().ToLower().Replace(" ", "-");
             await _brandRepository.SaveChangesAsync();
-            return existingBrand;
+            return _mapper.Map<BrandResponseDto>(existingBrand);
         }
     }
 }

@@ -1,10 +1,7 @@
-﻿using Appointly.Api.Common.DTOs.RoleChangeRequest;
+using Appointly.Application.DTOs.RoleChange;
 using Appointly.Application.Services.RoleChange;
-using Appointly.Application.Services.RoleChange.Contracts;
 using Appointly.Domain.Common.Constants;
-using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Appointly.Api.Controllers
@@ -14,26 +11,24 @@ namespace Appointly.Api.Controllers
     public class RoleChangeController : ControllerBase
     {
         private readonly IRoleChangeService _roleChangeService;
-        private readonly IMapper _mapper;
-        public RoleChangeController(IRoleChangeService roleChangeService, IMapper mapper)
+        public RoleChangeController(IRoleChangeService roleChangeService)
         {
             _roleChangeService = roleChangeService;
-            _mapper = mapper;
         }
 
         [HttpPost("change")]
-        public async Task<IActionResult> AddRoleChange([FromBody] RoleChangeRequestDto request)
+        public async Task<IActionResult> AddRoleChange([FromBody] AddRoleChangeRequestDto request)
         {
-            await _roleChangeService.AddRoleChangeRequest(request.UserId, request.RequestedRole);
+            await _roleChangeService.AddRoleChangeRequest(request);
             return Ok("Role Changed requested Succesfully");
         }
 
         [HttpGet]
         [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> GetAllRequests([FromQuery] RoleChangeRequestQueryDto queryDto)
+        public async Task<IActionResult> GetAllRequests([FromQuery] RoleChangeRequestQueryDto query)
         {
-            var results = await _roleChangeService.GetAllRequests(_mapper.Map<RoleChangeRequestQuery>(queryDto));
-            return Ok(_mapper.Map<List<RoleChangeResponseDto>>(results));
+            var results = await _roleChangeService.GetAllRequests(query);
+            return Ok(results);
         }
 
         [HttpDelete("{id:guid}")]

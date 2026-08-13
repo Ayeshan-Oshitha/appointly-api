@@ -1,16 +1,16 @@
-﻿using Appointly.Domain.Entities;
+﻿using Appointly.Application.DTOs.Location;
 
 namespace Appointly.Application.Services.Location
 {
     public interface ILocationService
     {
-        Task<List<Province>> GetProvinces();
-        Task<List<District>> GetDistricts(Guid? provinceId);
-        Task<List<City>> GetCities(Guid? districtId);
-        Task<List<City>> GetCitiesByProvince(Guid? provinceId);
-        Task<City?> GetCity(Guid cityId);
-        Task<City> AddCity(string name, Guid provienceId, Guid districtId);
-        Task<City> UpdateCity(Guid cityId, string? name, Guid? provienceId, Guid? districtId);
+        Task<List<ProvinceResponseDto>> GetProvinces();
+        Task<List<DistrictResponseDto>> GetDistricts(Guid? provinceId);
+        Task<List<CityResponseDto>> GetCities(Guid? districtId);
+        Task<List<CityResponseDto>> GetCitiesByProvince(Guid? provinceId);
+        Task<CityResponseDto?> GetCity(Guid cityId);
+        Task<CityResponseDto> AddCity(AddCityRequestDto request);
+        Task<CityResponseDto> UpdateCity(Guid cityId, UpdateCityRequestDto request);
         Task DeleteCity(Guid cityId);
 
     }

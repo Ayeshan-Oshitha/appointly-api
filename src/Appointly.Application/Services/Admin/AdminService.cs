@@ -1,10 +1,11 @@
 ﻿using Appointly.Application.Common.CurrentUser;
 using Appointly.Application.Common.Interfaces.Persistence;
-using Appointly.Application.Services.Admin.Contracts;
+using Appointly.Application.DTOs.Admin;
+using Appointly.Application.DTOs.Advertisements;
 using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Common.Enum;
-using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
+using MapsterMapper;
 
 namespace Appointly.Application.Services.Admin
 {
@@ -14,15 +15,17 @@ namespace Appointly.Application.Services.Admin
         private readonly IRoleChangeRepository _roleChangeRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IAdvertismentRepository _advertismentRepository;
-        public AdminService(IAdminRepository adminRepository, IRoleChangeRepository roleChangeRepository, ICurrentUser currentUser, IAdvertismentRepository advertismentRepository)
+        private readonly IMapper _mapper;
+        public AdminService(IAdminRepository adminRepository, IRoleChangeRepository roleChangeRepository, ICurrentUser currentUser, IAdvertismentRepository advertismentRepository, IMapper mapper)
         {
             _adminRepository = adminRepository;
             _roleChangeRepository = roleChangeRepository;
             _currentUser = currentUser;
             _advertismentRepository = advertismentRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<UserResponse>> GetAllUsers()
+        public async Task<List<UserResponseDto>> GetAllUsers()
         {
             return await _adminRepository.GetAllUsersAsync();
         }
@@ -99,7 +102,7 @@ namespace Appointly.Application.Services.Admin
             return await _adminRepository.RejectPromoteRequestAsync(changeRoleRequestId, currentUserId, rejectReason);
         }
 
-        public async Task<Advertisement> ApproveAdvertisment(Guid AdvertismentId)
+        public async Task<AdvertisementResponseDto> ApproveAdvertisment(Guid AdvertismentId)
         {
             var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(AdvertismentId);
 
@@ -115,10 +118,11 @@ namespace Appointly.Application.Services.Admin
 
              var currentUserId = _currentUser.Id;
 
-            return await _adminRepository.ApproveAdvertisementAsync(AdvertismentId, currentUserId);
+            var approved = await _adminRepository.ApproveAdvertisementAsync(AdvertismentId, currentUserId);
+            return _mapper.Map<AdvertisementResponseDto>(approved);
         }
 
-        public async Task<Advertisement> RejectAdvertisment(Guid AdvertismentId, string? reason)
+        public async Task<AdvertisementResponseDto> RejectAdvertisment(Guid AdvertismentId, string? reason)
         {
             var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(AdvertismentId);
 
@@ -134,15 +138,16 @@ namespace Appointly.Application.Services.Admin
 
             var currentUserId = _currentUser.Id;
 
-            return await _adminRepository.RejectAdvertisementAsync(AdvertismentId, currentUserId, reason);
+            var rejected = await _adminRepository.RejectAdvertisementAsync(AdvertismentId, currentUserId, reason);
+            return _mapper.Map<AdvertisementResponseDto>(rejected);
         }
 
-        public Task<Advertisement> BlockAdvertisment(Guid AdvertismentId)
+        public Task<AdvertisementResponseDto> BlockAdvertisment(Guid AdvertismentId)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Advertisement> UndoAdvertismentReview(Guid AdvertismentId)
+        public async Task<AdvertisementResponseDto> UndoAdvertismentReview(Guid AdvertismentId)
         {
             var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(AdvertismentId);
 
@@ -157,7 +162,7 @@ namespace Appointly.Application.Services.Admin
             }
 
             await _adminRepository.UndoAdvertismentReviewAsync(AdvertismentId);
-            return existingAd;
+            return _mapper.Map<AdvertisementResponseDto>(existingAd);
         }
     }
 }

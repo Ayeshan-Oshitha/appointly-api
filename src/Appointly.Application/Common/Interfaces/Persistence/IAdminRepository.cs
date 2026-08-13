@@ -1,11 +1,11 @@
-﻿using Appointly.Application.Services.Admin.Contracts;
+﻿using Appointly.Application.DTOs.Admin;
 using Appointly.Domain.Entities;
 
 namespace Appointly.Application.Common.Interfaces.Persistence
 {
     public interface IAdminRepository
     {
-        Task<List<UserResponse>> GetAllUsersAsync();
+        Task<List<UserResponseDto>> GetAllUsersAsync();
         Task<bool> PromoteToAdminAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId);
         Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId);
         Task<bool> RejectPromoteRequestAsync(Guid changeRoleRequestId, Guid currrentUserId, string? rejectReason);

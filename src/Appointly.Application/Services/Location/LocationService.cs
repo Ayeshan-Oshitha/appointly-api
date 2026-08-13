@@ -1,57 +1,66 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.DTOs.Location;
 using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
+using MapsterMapper;
 
 namespace Appointly.Application.Services.Location
 {
     public class LocationService : ILocationService
     {
         private readonly ILocationRepository _locationRepository;
-        public LocationService(ILocationRepository locationRepository)
+        private readonly IMapper _mapper;
+        public LocationService(ILocationRepository locationRepository, IMapper mapper)
         {
             _locationRepository = locationRepository;
+            _mapper = mapper;
         }
 
         // Get all provinces
-        public async Task<List<Province>> GetProvinces()
+        public async Task<List<ProvinceResponseDto>> GetProvinces()
         {
-            return await _locationRepository.GetProvincesAsync();
+            var provinces = await _locationRepository.GetProvincesAsync();
+            return _mapper.Map<List<ProvinceResponseDto>>(provinces);
         }
 
         // Get all districts or districts by province id
-        public async Task<List<District>> GetDistricts(Guid? provinceId)
+        public async Task<List<DistrictResponseDto>> GetDistricts(Guid? provinceId)
         {
-            return await _locationRepository.GetDistrictsByProvinceIdAsync(provinceId);
+            var districts = await _locationRepository.GetDistrictsByProvinceIdAsync(provinceId);
+            return _mapper.Map<List<DistrictResponseDto>>(districts);
         }
 
         // Get all cities or cities by district id
-        public async Task<List<City>> GetCities(Guid? districtId)
+        public async Task<List<CityResponseDto>> GetCities(Guid? districtId)
         {
-            return await _locationRepository.GetCitiesByDistrictIdAsync(districtId);
+            var cities = await _locationRepository.GetCitiesByDistrictIdAsync(districtId);
+            return _mapper.Map<List<CityResponseDto>>(cities);
         }
 
         // Get all cities or cities by province id
-        public async Task<List<City>> GetCitiesByProvince(Guid? provinceId)
+        public async Task<List<CityResponseDto>> GetCitiesByProvince(Guid? provinceId)
         {
-            return await _locationRepository.GetCitiesByProvienceIdAsync(provinceId);
+            var cities = await _locationRepository.GetCitiesByProvienceIdAsync(provinceId);
+            return _mapper.Map<List<CityResponseDto>>(cities);
         }
 
         // Get city by cityId
-        public async Task<City?> GetCity(Guid cityId)
+        public async Task<CityResponseDto?> GetCity(Guid cityId)
         {
-            return await _locationRepository.GetCityById(cityId);
+            var city = await _locationRepository.GetCityById(cityId);
+            return city == null ? null : _mapper.Map<CityResponseDto>(city);
         }
 
-        public async Task<City> AddCity(string name, Guid provienceId, Guid districtId)
+        public async Task<CityResponseDto> AddCity(AddCityRequestDto request)
         {
-            await ValidateProvinceDistrictRelationship(districtId, provienceId);
+            await ValidateProvinceDistrictRelationship(request.DistrictId, request.ProvinceId);
 
             var city = new City
             {
-                Name = name,
-                Slug = name.Trim().ToLower().Replace(" ", "-"),
-                ProvinceId = provienceId,
-                DistrictId = districtId
+                Name = request.Name,
+                Slug = request.Name.Trim().ToLower().Replace(" ", "-"),
+                ProvinceId = request.ProvinceId,
+                DistrictId = request.DistrictId
             };
 
             if (await _locationRepository.CitySlugExistsAsync(city.Slug))
@@ -60,36 +69,36 @@ namespace Appointly.Application.Services.Location
             }
 
             var addedCity = await _locationRepository.AddCityAsync(city);
-            return addedCity;
+            return _mapper.Map<CityResponseDto>(addedCity);
         }
 
-        public async Task<City> UpdateCity(Guid cityId, string? name, Guid? provienceId, Guid? districtId)
+        public async Task<CityResponseDto> UpdateCity(Guid cityId, UpdateCityRequestDto request)
         {
             var existingCity = await _locationRepository.GetCityById(cityId);
 
             if (existingCity == null)
             {
                 throw new NotFoundException("City not found");
-            } 
+            }
 
-            var newProvinceId = provienceId ?? existingCity.ProvinceId;
-            var newDistrictId = districtId ?? existingCity.DistrictId;
+            var newProvinceId = request.ProvinceId ?? existingCity.ProvinceId;
+            var newDistrictId = request.DistrictId ?? existingCity.DistrictId;
 
             await ValidateProvinceDistrictRelationship(newDistrictId, newProvinceId);
 
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(request.Name))
             {
-                existingCity.Name = name;
-                existingCity.Slug = name.ToLower().Replace(" ", "-");
+                existingCity.Name = request.Name;
+                existingCity.Slug = request.Name.ToLower().Replace(" ", "-");
             }
-            if (provienceId.HasValue || districtId.HasValue)
+            if (request.ProvinceId.HasValue || request.DistrictId.HasValue)
             {
                 existingCity.ProvinceId = newProvinceId;
                 existingCity.DistrictId = newDistrictId;
             }
 
             await _locationRepository.SaveChangesAsync();
-            return existingCity;
+            return _mapper.Map<CityResponseDto>(existingCity);
         }
 
         public async Task DeleteCity(Guid cityId)

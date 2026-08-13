@@ -1,10 +1,11 @@
 ﻿
 using Appointly.Application.Common.CurrentUser;
 using Appointly.Application.Common.Interfaces.Persistence;
-using Appointly.Application.Services.RoleChange.Contracts;
+using Appointly.Application.DTOs.RoleChange;
 using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
+using MapsterMapper;
 
 namespace Appointly.Application.Services.RoleChange
 {
@@ -13,20 +14,22 @@ namespace Appointly.Application.Services.RoleChange
         private readonly IRoleChangeRepository _roleChangeRepository;
         private readonly IUserRepository _userRepository;
         private readonly ICurrentUser _currentUser;
-        public RoleChangeService(IRoleChangeRepository roleChangeRepository, IUserRepository userRepository, ICurrentUser currentUser)
+        private readonly IMapper _mapper;
+        public RoleChangeService(IRoleChangeRepository roleChangeRepository, IUserRepository userRepository, ICurrentUser currentUser, IMapper mapper)
         {
             _roleChangeRepository = roleChangeRepository;
             _userRepository = userRepository;
             _currentUser = currentUser;
+            _mapper = mapper;
         }
-        public async Task AddRoleChangeRequest(Guid userId, string newRole)
+        public async Task AddRoleChangeRequest(AddRoleChangeRequestDto request)
         {
-            if (!Roles.All.Contains(newRole))
+            if (!Roles.All.Contains(request.RequestedRole))
             {
                 throw new BadRequestException("Invalid role specified.");
             }
 
-            var user = await _userRepository.UserExistsAsync(userId);
+            var user = await _userRepository.UserExistsAsync(request.UserId);
 
             if (!user)
             {
@@ -34,12 +37,13 @@ namespace Appointly.Application.Services.RoleChange
             }
 
 
-            await _roleChangeRepository.AddRoleChangeRequestAsync(userId, newRole);
+            await _roleChangeRepository.AddRoleChangeRequestAsync(request.UserId, request.RequestedRole);
         }
 
-        public async Task<List<RoleChangeRequest>> GetAllRequests(RoleChangeRequestQuery query)
+        public async Task<List<RoleChangeResponseDto>> GetAllRequests(RoleChangeRequestQueryDto query)
         {
-            return await _roleChangeRepository.GetAllRequestsAsync(query);
+            var requests = await _roleChangeRepository.GetAllRequestsAsync(query);
+            return _mapper.Map<List<RoleChangeResponseDto>>(requests);
         }
 
         public async Task DeleteRoleChangeRequest(Guid id)

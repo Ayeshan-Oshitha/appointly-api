@@ -1,10 +1,7 @@
-﻿using Appointly.Api.Common.DTOs.Admin;
-using Appointly.Api.Common.DTOs.Advertisment;
+using Appointly.Application.DTOs.Admin;
 using Appointly.Application.Services.Admin;
 using Appointly.Domain.Common.Constants;
-using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Appointly.Api.Controllers
@@ -15,18 +12,16 @@ namespace Appointly.Api.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
-        private readonly IMapper _mapper;
-        public AdminController(IAdminService adminService, IMapper mapper)
+        public AdminController(IAdminService adminService)
         {
             _adminService = adminService;
-            _mapper = mapper;
         }
 
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _adminService.GetAllUsers();
-            return Ok(_mapper.Map<List<UserResponseDto>>(users));
+            return Ok(users);
         }
 
         [HttpPost("PromoteToAdmin")]
@@ -69,21 +64,21 @@ namespace Appointly.Api.Controllers
         public async Task<IActionResult> ApproveAdvertisement([FromRoute] Guid advertisementId)
         {
             var advertisement = await _adminService.ApproveAdvertisment(advertisementId);
-            return Ok(_mapper.Map<AdvertisementResponseDto>(advertisement));
+            return Ok(advertisement);
         }
 
         [HttpPost("advertisement/{advertisementId:guid}/reject")]
-        public async Task<IActionResult> RejectAdvertisement([FromRoute] Guid advertisementId, [FromBody] RejectAdvertismentRequestDto requestDto)
+        public async Task<IActionResult> RejectAdvertisement([FromRoute] Guid advertisementId, [FromBody] RejectAdvertisementRequestDto requestDto)
         {
             var advertisement = await _adminService.RejectAdvertisment(advertisementId, requestDto.RejectReason);
-            return Ok(_mapper.Map<AdvertisementResponseDto>(advertisement));
+            return Ok(advertisement);
         }
 
         [HttpPost("advertisement/{advertisementId:guid}/undo")]
         public async Task<IActionResult> UndoAdvertisementReview([FromRoute] Guid advertisementId)
         {
             var advertisement = await _adminService.UndoAdvertismentReview(advertisementId);
-            return Ok(_mapper.Map<AdvertisementResponseDto>(advertisement));
+            return Ok(advertisement);
         }
     }
 }
