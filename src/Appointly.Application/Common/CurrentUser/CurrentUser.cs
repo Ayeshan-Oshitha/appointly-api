@@ -18,6 +18,8 @@ namespace Appointly.Application.Common.CurrentUser
 
         public string Email => GetRequiredClaimValue(ClaimTypes.Email);
 
+        public IReadOnlyList<string> Roles => GetUserRoles();
+
         private ClaimsPrincipal GetAuthenticatedUser()
         {
             var user = _httpContextAccessor.HttpContext?.User;
@@ -39,6 +41,13 @@ namespace Appointly.Application.Common.CurrentUser
             }
 
             return claim.Value;
+        }
+
+        private IReadOnlyList<string> GetUserRoles()
+        {
+            var user = GetAuthenticatedUser();
+            var roles = user.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+            return roles;
         }
     }
 }

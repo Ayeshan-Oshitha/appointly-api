@@ -5,7 +5,7 @@ using Mapster;
 
 namespace Appointly.Api.Common.Mapping
 {
-    public class RoleChangeConfig : IRegister
+    public class RoleChangeMappingConfig : IRegister
     {
         public void Register(TypeAdapterConfig config)
         {

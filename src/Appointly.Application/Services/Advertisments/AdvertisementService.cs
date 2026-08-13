@@ -1,4 +1,5 @@
-﻿using Appointly.Application.Common.Interfaces.Persistence;
+﻿using Appointly.Application.Common.CurrentUser;
+using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.Services.Advertisements;
 using Appointly.Application.Services.Advertisment.Contracts;
 using Appointly.Application.Services.Advertisments.Contracts;
@@ -13,10 +14,12 @@ namespace Appointly.Application.Services.Advertisments
 
         private readonly IAdvertismentRepository _advertismentRepository;
         private readonly IModelRepository _modelRepository;
-        public AdvertisementService(IAdvertismentRepository advertismentRepository, IModelRepository modelRepository)
+        private readonly ICurrentUser _currentUser;
+        public AdvertisementService(IAdvertismentRepository advertismentRepository, IModelRepository modelRepository, ICurrentUser currentUser)
         {
             _advertismentRepository = advertismentRepository;
             _modelRepository = modelRepository;
+            _currentUser = currentUser;
         }
         public async Task<Advertisement> AddAdvertisment(CreateAdvertisementRequest request)
         {
@@ -40,6 +43,7 @@ namespace Appointly.Application.Services.Advertisments
                 ContactName = request.ContactName,
                 ContactPhone = request.ContactPhone,
                 ContactEmail = request.ContactEmail,
+                SellerId = _currentUser.Id,
                 IsHidePhone = request.IsHidePhone,
                 IsWhatsapp = request.IsWhatsapp,
                 IsBiddable = request.IsBiddable

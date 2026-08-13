@@ -177,5 +177,63 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return await _dbContext.RoleChangeRequests
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == RoleRequestTypes.Pending);
         }
+
+        public async Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertismentId, Guid currentUserId)
+        {
+            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertismentId);
+
+            if (existingAd == null)
+            {
+                throw new NotFoundException("Advertisement not found.");
+            }
+
+            existingAd.Status = AdStatus.Active;
+            existingAd.ReviewByAdminId = currentUserId;
+            existingAd.ReviewedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+            return existingAd;
+        }
+
+        public async Task<Advertisement> RejectAdvertisementAsync(Guid AdvertismentId, Guid currentUserId, string? reason)
+        {
+            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertismentId);
+
+            if (existingAd == null)
+            {
+                throw new NotFoundException("Advertisement not found.");
+            }
+
+            existingAd.Status = AdStatus.Rejected;
+            existingAd.RejectedReason = reason ?? null;
+            existingAd.ReviewByAdminId = currentUserId;
+            existingAd.ReviewedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+            return existingAd;
+        }
+
+        public Task<Advertisement> BlockAdvertisementAsync(Guid AdvertismentId, Guid currentUserId, string? reason)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Advertisement> UndoAdvertismentReviewAsync(Guid AdvertismentId)
+        {
+            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertismentId);
+
+            if (existingAd == null)
+            {
+                throw new NotFoundException("Advertisement not found.");
+            }
+
+            existingAd.Status = AdStatus.Pending;
+            existingAd.RejectedReason = null;
+            existingAd.ReviewByAdminId = null;
+            existingAd.ReviewedAt = null;
+
+            await _dbContext.SaveChangesAsync();
+            return existingAd;
+        }
     }
 }

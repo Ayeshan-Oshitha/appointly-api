@@ -35,7 +35,10 @@ namespace Appointly.Infrastructure.Persistence.Repositories
                                 .Include(a => a.City)
                                     .ThenInclude(c => c.District)
                                 .Include(a => a.City)
-                                    .ThenInclude(c => c.Province);
+                                    .ThenInclude(c => c.Province)
+                                .Include(a => a.Seller)
+                                .Include(a => a.ReviewByAdmin);
+
 
             if (!string.IsNullOrEmpty(query.Search))
             {
