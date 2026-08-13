@@ -1,5 +1,5 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
-using Appointly.Application.Services.Advertisments.Contracts;
+using Appointly.Application.DTOs.Advertisements;
 using Appointly.Domain.Common.Enum;
 using Appointly.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +25,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return await _dbContext.Advertisements.FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<List<Advertisement>> GetAllAdvertismentsAsync(AdvertisementQuery query)
+        public async Task<List<Advertisement>> GetAllAdvertismentsAsync(AdvertisementQueryDto query)
         {
 
             IQueryable<Advertisement> q = _dbContext.Advertisements

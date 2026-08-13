@@ -1,12 +1,12 @@
-﻿using Appointly.Application.Services.Admin.Contracts;
-using Appointly.Application.Services.Authentication.Contracts;
+﻿using Appointly.Application.DTOs.Admin;
+using Appointly.Application.DTOs.Authentication;
 
 namespace Appointly.Application.Services.Authentication
 {
     public interface IAuthenticationService
     {
-        Task<RegisterResponse> Register(string firstName, string lastName, string email, string password, string phoneNumber);
-        Task<LoginResponse> Login(string email, string password);
-        Task<UserResponse> GetCurrentUserProfile();
+        Task<RegisterResponseDto> Register(RegisterRequestDto request);
+        Task<LoginResponseDto> Login(LoginRequestDto request);
+        Task<UserResponseDto> GetCurrentUserProfile();
     }
 }

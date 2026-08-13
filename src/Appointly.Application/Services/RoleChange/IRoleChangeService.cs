@@ -1,12 +1,11 @@
-﻿using Appointly.Application.Services.RoleChange.Contracts;
-using Appointly.Domain.Entities;
+﻿using Appointly.Application.DTOs.RoleChange;
 
 namespace Appointly.Application.Services.RoleChange
 {
     public interface IRoleChangeService
     {
-        Task AddRoleChangeRequest(Guid userId, string newRole);
-        Task<List<RoleChangeRequest>> GetAllRequests(RoleChangeRequestQuery query);
+        Task AddRoleChangeRequest(AddRoleChangeRequestDto request);
+        Task<List<RoleChangeResponseDto>> GetAllRequests(RoleChangeRequestQueryDto query);
         Task DeleteRoleChangeRequest(Guid id);
     }
 }

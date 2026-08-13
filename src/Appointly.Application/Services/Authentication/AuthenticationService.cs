@@ -1,8 +1,8 @@
 ﻿using Appointly.Application.Common.CurrentUser;
 using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.Common.Interfaces.Services;
-using Appointly.Application.Services.Admin.Contracts;
-using Appointly.Application.Services.Authentication.Contracts;
+using Appointly.Application.DTOs.Admin;
+using Appointly.Application.DTOs.Authentication;
 using Appointly.Domain.Infrastructure.Exceptions;
 
 namespace Appointly.Application.Services.Authentication
@@ -21,49 +21,49 @@ namespace Appointly.Application.Services.Authentication
             _userRepository = userRepository;
             _currentUser = currentUser;
         }
-        public async Task<RegisterResponse> Register(string firstName, string lastName, string email, string password, string phoneNumber)
+        public async Task<RegisterResponseDto> Register(RegisterRequestDto request)
         {
-            var existingUser = await _userRepository.GetUserByEmailAsync(email);
+            var existingUser = await _userRepository.GetUserByEmailAsync(request.Email);
             if (existingUser != null)
             {
                 throw new ConflictException("User with this email already exists.");
             }
-            var newUser = await _userRepository.AddUserAsync(firstName, lastName, email.ToLower(), password, phoneNumber);
+            var newUser = await _userRepository.AddUserAsync(request.FirstName, request.LastName, request.Email.ToLower(), request.Password, request.PhoneNumber);
 
-            return new RegisterResponse
+            return new RegisterResponseDto
             {
                 UserId = newUser.Id,
                 FirstName = newUser.FirstName,
                 LastName = newUser.LastName,
-                Email = email
+                Email = request.Email
             };
 
         }
 
-        public async Task<LoginResponse> Login(string email, string password)
+        public async Task<LoginResponseDto> Login(LoginRequestDto request)
         {
 
-            var existingUser = await _userRepository.IsPasswordValid(email.ToLower(), password);
+            var existingUser = await _userRepository.IsPasswordValid(request.Email.ToLower(), request.Password);
 
             var token = await _jwtTokenGenerator.GenerateAccessToken(
                 existingUser.Id,
                 existingUser.IdentityUserId,
                 existingUser.FirstName,
                 existingUser.LastName,
-                email.ToLower());
+                request.Email.ToLower());
 
 
-            return new LoginResponse
+            return new LoginResponseDto
             {
                 UserId = existingUser.Id,
                 FirstName = existingUser.FirstName,
                 LastName = existingUser.LastName,
-                Email = email.ToLower(),
+                Email = request.Email.ToLower(),
                 Token = token
             };
         }
 
-        public async Task<UserResponse> GetCurrentUserProfile()
+        public async Task<UserResponseDto> GetCurrentUserProfile()
         {
             var userId = _currentUser.Id;
             var userProfile = await _userRepository.GetUserProfileByIdAsync(userId);

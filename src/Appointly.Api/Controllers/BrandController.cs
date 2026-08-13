@@ -1,9 +1,7 @@
-﻿using Appointly.Api.Common.DTOs.Brands;
+using Appointly.Application.DTOs.Brand;
 using Appointly.Application.Services.Brands;
 using Appointly.Domain.Common.Constants;
-using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Appointly.Api.Controllers
@@ -13,33 +11,31 @@ namespace Appointly.Api.Controllers
     [Authorize(Roles = Roles.User)]
     public class BrandController : ControllerBase
     {
-        private readonly IMapper _mapper;
         private readonly IBrandService _brandService;
-        public BrandController(IBrandService brandService, IMapper mapper)
+        public BrandController(IBrandService brandService)
         {
             _brandService = brandService;
-            _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllBrands()
         {
             var brands = await _brandService.GetAllBrands();
-            return Ok(_mapper.Map<List<BrandResponseDto>>(brands));
+            return Ok(brands);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequestDto request)
         {
-            var brand = await _brandService.AddBrand(request.Name);
-            return Ok(_mapper.Map<BrandResponseDto>(brand));
+            var brand = await _brandService.AddBrand(request);
+            return Ok(brand);
         }
 
         [HttpPut("{brandId:guid}")]
         public async Task<IActionResult> UpdateBrand([FromRoute] Guid brandId, [FromBody] UpdateBrandRequestDto request)
         {
-            var brand = await _brandService.UpdateBrand(brandId, request.Name);
-            return Ok(_mapper.Map<BrandResponseDto>(brand));
+            var brand = await _brandService.UpdateBrand(brandId, request);
+            return Ok(brand);
         }
 
         [HttpDelete("{brandId:guid}")]

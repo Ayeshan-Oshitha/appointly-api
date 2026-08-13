@@ -1,5 +1,5 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
-using Appointly.Application.Services.Admin.Contracts;
+using Appointly.Application.DTOs.Admin;
 using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
@@ -105,7 +105,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return user;
         }
 
-        public async Task<UserResponse> GetUserProfileByIdAsync(Guid userId)
+        public async Task<UserResponseDto> GetUserProfileByIdAsync(Guid userId)
         {
             var domainUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
@@ -123,7 +123,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
             var roles = await _userManager.GetRolesAsync(identityUser);
 
-            return new UserResponse
+            return new UserResponseDto
             {
                 Id = domainUser.Id,
                 FirstName = domainUser.FirstName,

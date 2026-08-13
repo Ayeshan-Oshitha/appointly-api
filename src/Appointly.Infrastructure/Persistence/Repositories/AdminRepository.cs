@@ -1,5 +1,5 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
-using Appointly.Application.Services.Admin.Contracts;
+using Appointly.Application.DTOs.Admin;
 using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Common.Enum;
 using Appointly.Domain.Entities;
@@ -20,7 +20,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             _userManager = userManager;
         }
 
-        public async Task<List<UserResponse>> GetAllUsersAsync()
+        public async Task<List<UserResponseDto>> GetAllUsersAsync()
         {
             var identityUsers = await _userManager.Users.ToListAsync();
 
@@ -29,7 +29,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             var domainUsers = await _dbContext.Users
                 .Where(u => identityUserIds.Contains(u.IdentityUserId)).ToListAsync();
 
-            var result = new List<UserResponse>();
+            var result = new List<UserResponseDto>();
 
             foreach (var identityUser in identityUsers)
             {
@@ -37,7 +37,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
 
                 var roles = await _userManager.GetRolesAsync(identityUser); // awaited one-by-one
 
-                result.Add(new UserResponse
+                result.Add(new UserResponseDto
                 {
                     Id = domainUser != null ? domainUser.Id : Guid.Empty,
                     FirstName = domainUser?.FirstName,

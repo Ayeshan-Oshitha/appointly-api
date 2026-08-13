@@ -1,5 +1,4 @@
 using Appointly.Api;
-using Appointly.Api.Common.Mapping;
 using Appointly.Api.Middleware;
 using Appointly.Application;
 using Appointly.Infrastructure;
@@ -24,8 +23,6 @@ var builder = WebApplication.CreateBuilder(args);
             options.JsonSerializerOptions.Converters.Add(
                 new System.Text.Json.Serialization.JsonStringEnumConverter());
         });
-
-    builder.Services.AddMappings();
 
     builder.Services.AddPresentationServices();
     builder.Services.AddApplicationService();

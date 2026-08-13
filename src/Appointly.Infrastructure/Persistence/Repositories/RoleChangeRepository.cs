@@ -1,5 +1,5 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
-using Appointly.Application.Services.RoleChange.Contracts;
+using Appointly.Application.DTOs.RoleChange;
 using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Common.Enum;
 using Appointly.Domain.Entities;
@@ -37,7 +37,7 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<List<RoleChangeRequest>> GetAllRequestsAsync(RoleChangeRequestQuery query)
+        public async Task<List<RoleChangeRequest>> GetAllRequestsAsync(RoleChangeRequestQueryDto query)
         {
             IQueryable<RoleChangeRequest> q = _dbContext.RoleChangeRequests
                                     .AsNoTracking()

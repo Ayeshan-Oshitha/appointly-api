@@ -1,6 +1,8 @@
 ﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.DTOs.Model;
 using Appointly.Domain.Entities;
 using Appointly.Domain.Infrastructure.Exceptions;
+using MapsterMapper;
 
 namespace Appointly.Application.Services.Models
 {
@@ -8,14 +10,16 @@ namespace Appointly.Application.Services.Models
     {
         private readonly IModelRepository _modelRepository;
         private readonly IBrandRepository _brandRepository;
-        public ModelService(IModelRepository modelRepository, IBrandRepository brandRepository)
+        private readonly IMapper _mapper;
+        public ModelService(IModelRepository modelRepository, IBrandRepository brandRepository, IMapper mapper)
         {
             _modelRepository = modelRepository;
             _brandRepository = brandRepository;
+            _mapper = mapper;
         }
-        public async Task<Model> AddModel(string name, Guid brandId)
+        public async Task<ModelResponseDto> AddModel(CreateModelRequestDto request)
         {
-            var existingBrandId = await _brandRepository.GetBrandByIdAsync(brandId);
+            var existingBrandId = await _brandRepository.GetBrandByIdAsync(request.BrandId);
 
             if (existingBrandId == null)
             {
@@ -25,9 +29,9 @@ namespace Appointly.Application.Services.Models
             var model = new Model
             {
                 Id = Guid.NewGuid(),
-                Name = name,
-                Slug = name.Trim().ToLower().Replace(" ", "-"),
-                BrandId = brandId
+                Name = request.Name,
+                Slug = request.Name.Trim().ToLower().Replace(" ", "-"),
+                BrandId = request.BrandId
             };
 
             if (await _modelRepository.ModelSlugExistsAsync(model.Slug))
@@ -36,15 +40,16 @@ namespace Appointly.Application.Services.Models
             }
 
             var addedModel = await _modelRepository.AddModelAsync(model);
-            return addedModel;
+            return _mapper.Map<ModelResponseDto>(addedModel);
         }
 
-        public async Task<List<Model>> GetModels(Guid? brandId)
+        public async Task<List<ModelResponseDto>> GetModels(Guid? brandId)
         {
-            return await _modelRepository.GetAllModels(brandId);
+            var models = await _modelRepository.GetAllModels(brandId);
+            return _mapper.Map<List<ModelResponseDto>>(models);
         }
 
-        public async Task<Model> UpdateModel(Guid modelId, string? name, Guid? brandId)
+        public async Task<ModelResponseDto> UpdateModel(Guid modelId, UpdateModelRequestDto request)
         {
             var existingModel = await _modelRepository.GetModelByIdAsync(modelId);
 
@@ -53,24 +58,24 @@ namespace Appointly.Application.Services.Models
                 throw new NotFoundException("Model not found.");
             }
 
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(request.Name))
             {
-                existingModel.Name = name;
-                existingModel.Slug = name.Trim().ToLower().Replace(" ", "-");
+                existingModel.Name = request.Name;
+                existingModel.Slug = request.Name.Trim().ToLower().Replace(" ", "-");
             }
 
-            if (brandId.HasValue)
+            if (request.BrandId.HasValue)
             {
-                var existingBrandId = await _brandRepository.GetBrandByIdAsync(brandId.Value);
+                var existingBrandId = await _brandRepository.GetBrandByIdAsync(request.BrandId.Value);
                 if (existingBrandId == null)
                 {
                     throw new BadRequestException("Brand does not exist.");
                 }
-                existingModel.BrandId = brandId.Value;
+                existingModel.BrandId = request.BrandId.Value;
             }
 
             await _modelRepository.SaveModelAsync();
-            return existingModel;
+            return _mapper.Map<ModelResponseDto>(existingModel);
         }
 
         public async Task DeleteModel(Guid modelId)
