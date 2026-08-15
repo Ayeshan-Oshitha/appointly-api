@@ -23,19 +23,23 @@ namespace MotorHub.Application.Services.Authentication
         }
         public async Task<RegisterResponseDto> Register(RegisterRequestDto request)
         {
-            var existingUser = await _userRepository.GetUserByEmailAsync(request.Email);
+            // Normalise once: the pre-check and the insert must agree on casing, or a
+            // mixed-case duplicate slips past the check and fails deeper down.
+            var email = request.Email.ToLower();
+
+            var existingUser = await _userRepository.GetUserByEmailAsync(email);
             if (existingUser != null)
             {
                 throw new ConflictException("User with this email already exists.");
             }
-            var newUser = await _userRepository.AddUserAsync(request.FirstName, request.LastName, request.Email.ToLower(), request.Password, request.PhoneNumber);
+            var newUser = await _userRepository.AddUserAsync(request.FirstName, request.LastName, email, request.Password, request.PhoneNumber);
 
             return new RegisterResponseDto
             {
                 UserId = newUser.Id,
                 FirstName = newUser.FirstName,
                 LastName = newUser.LastName,
-                Email = request.Email
+                Email = email
             };
 
         }

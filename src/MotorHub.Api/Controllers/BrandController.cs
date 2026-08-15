@@ -8,7 +8,6 @@ namespace MotorHub.Api.Controllers
 {
     [Route("brand")]
     [ApiController]
-    [Authorize(Roles = Roles.User)]
     public class BrandController : ControllerBase
     {
         private readonly IBrandService _brandService;
@@ -18,6 +17,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllBrands()
         {
             var brands = await _brandService.GetAllBrands();
@@ -25,6 +25,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequestDto request)
         {
             var brand = await _brandService.AddBrand(request);
@@ -32,6 +33,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpPut("{brandId:guid}")]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> UpdateBrand([FromRoute] Guid brandId, [FromBody] UpdateBrandRequestDto request)
         {
             var brand = await _brandService.UpdateBrand(brandId, request);
@@ -39,6 +41,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpDelete("{brandId:guid}")]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> DeleteBrand([FromRoute] Guid brandId)
         {
            await _brandService.DeleteBrand(brandId);

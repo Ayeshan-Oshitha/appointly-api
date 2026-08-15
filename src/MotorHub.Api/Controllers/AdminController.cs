@@ -8,7 +8,7 @@ namespace MotorHub.Api.Controllers
 {
     [Route("admin")]
     [ApiController]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Policy = Policies.AdminOnly)]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
@@ -41,7 +41,7 @@ namespace MotorHub.Api.Controllers
             var isSeller = await _adminService.PromoteToSeller(userId, changeRoleRequestId);
             if (isSeller)
             {
-                return Ok("User Promoted to Admin");
+                return Ok("User Promoted to Seller");
             }
             return BadRequest();
         }

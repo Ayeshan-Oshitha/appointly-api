@@ -107,7 +107,9 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             };
 
             // Pagination
-            var page = query.Page ?? 1;
+            // Clamped for the same reason as in AdvertisementRepository: a negative page
+            // would produce a negative OFFSET.
+            var page = Math.Max(query.Page ?? 1, 1);
             var pageSize = Math.Clamp(query.PageSize ?? 10, 1, 100);
 
             q = q.Skip((page - 1) * pageSize).Take(pageSize);

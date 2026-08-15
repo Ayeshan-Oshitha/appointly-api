@@ -17,14 +17,15 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpPost("change")]
+        [Authorize]
         public async Task<IActionResult> AddRoleChange([FromBody] AddRoleChangeRequestDto request)
         {
             await _roleChangeService.AddRoleChangeRequest(request);
-            return Ok("Role Changed requested Succesfully");
+            return Ok("Role change requested successfully");
         }
 
         [HttpGet]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> GetAllRequests([FromQuery] RoleChangeRequestQueryDto query)
         {
             var results = await _roleChangeService.GetAllRequests(query);
@@ -32,6 +33,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize]
         public async Task<IActionResult> DeleteRoleChangeRequest([FromRoute] Guid id)
         {
             await _roleChangeService.DeleteRoleChangeRequest(id);

@@ -14,7 +14,10 @@ namespace MotorHub.Application.Common.CurrentUser
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public Guid Id => Guid.Parse(GetRequiredClaimValue(ClaimTypes.NameIdentifier));
+        public bool IsAuthenticated =>
+            _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
+
+        public Guid Id => GetRequiredGuidClaim(ClaimTypes.NameIdentifier);
 
         public string Email => GetRequiredClaimValue(ClaimTypes.Email);
 
@@ -23,7 +26,7 @@ namespace MotorHub.Application.Common.CurrentUser
         private ClaimsPrincipal GetAuthenticatedUser()
         {
             var user = _httpContextAccessor.HttpContext?.User;
-            if (user == null || !user.Identity.IsAuthenticated)
+            if (user?.Identity?.IsAuthenticated != true)
             {
                 throw new UnauthorizedException("User is not authenticated.");
             }
@@ -41,6 +44,18 @@ namespace MotorHub.Application.Common.CurrentUser
             }
 
             return claim.Value;
+        }
+
+        // A malformed subject claim is a bad token, so it belongs with the other 401s rather
+        // than escaping as a FormatException and surfacing as a 500.
+        private Guid GetRequiredGuidClaim(string claimType)
+        {
+            if (!Guid.TryParse(GetRequiredClaimValue(claimType), out var value))
+            {
+                throw new UnauthorizedException("Required claim is malformed.");
+            }
+
+            return value;
         }
 
         private IReadOnlyList<string> GetUserRoles()

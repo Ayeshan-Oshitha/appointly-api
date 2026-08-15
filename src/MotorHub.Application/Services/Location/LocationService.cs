@@ -89,7 +89,7 @@ namespace MotorHub.Application.Services.Location
             if (!string.IsNullOrEmpty(request.Name))
             {
                 existingCity.Name = request.Name;
-                existingCity.Slug = request.Name.ToLower().Replace(" ", "-");
+                existingCity.Slug = request.Name.Trim().ToLower().Replace(" ", "-");
             }
             if (request.ProvinceId.HasValue || request.DistrictId.HasValue)
             {

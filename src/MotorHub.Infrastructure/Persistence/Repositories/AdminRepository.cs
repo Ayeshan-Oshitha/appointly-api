@@ -26,7 +26,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
             var identityUserIds = identityUsers.Select(u => u.Id).ToList();
 
-            var domainUsers = await _dbContext.Users
+            var domainUsers = await _dbContext.DomainUsers
                 .Where(u => identityUserIds.Contains(u.IdentityUserId)).ToListAsync();
 
             var result = new List<UserResponseDto>();
@@ -62,7 +62,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             }
 
             // Load User
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await _dbContext.DomainUsers.FirstOrDefaultAsync(x => x.Id == userId);
 
             if (user == null)
             {
@@ -76,30 +76,40 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                 throw new NotFoundException("Identity User not found.");
             }
 
-            var currentRoles = await _userManager.GetRolesAsync(identityUser);
+            // AddToRoleAsync commits on its own, so the role grant and the request status update
+            // need one transaction between them - otherwise a mid-sequence failure leaves the
+            // user promoted with the request still Pending, or the reverse.
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            if (currentRoles.Any())
+            try
             {
-                var removeResult = await _userManager.RemoveFromRolesAsync(identityUser, currentRoles);
-                if (!removeResult.Succeeded)
+                // Roles are additive: User is the baseline every account keeps, Seller and Admin are
+                // tiers layered on top. Removing the existing roles here would strip User and lock the
+                // promoted account out of every User-gated endpoint.
+                if (!await _userManager.IsInRoleAsync(identityUser, Roles.Admin))
                 {
-                    throw new Exception("Failed to remove existing roles.");
+                    var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Admin);
+                    if (!addResult.Succeeded)
+                    {
+                        throw new Exception("Failed to assign new role.");
+                    }
                 }
-            }
 
-            var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Admin);
-            if (!addResult.Succeeded)
+                // Update Role Change Request Status
+                request.Status = RoleRequestTypes.Approved;
+                request.ReviewedByAdminId = currrentUserId;
+                request.ReviewedAt = DateTime.UtcNow;
+
+                await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
             {
-                throw new Exception("Failed to assign new role.");
+                await transaction.RollbackAsync();
+                throw;
             }
-
-            // Update Role Change Request Status
-            request.Status = RoleRequestTypes.Approved;
-            request.ReviewedByAdminId = currrentUserId;
-            request.ReviewedAt = DateTime.UtcNow;
-
-            await _dbContext.SaveChangesAsync();
-            return true;
         }
 
         public async Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId)
@@ -113,7 +123,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             }
 
             // Load User
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await _dbContext.DomainUsers.FirstOrDefaultAsync(x => x.Id == userId);
 
             if (user == null)
             {
@@ -127,30 +137,36 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                 throw new NotFoundException("Identity User not found.");
             }
 
-            var currentRoles = await _userManager.GetRolesAsync(identityUser);
+            // Transactional for the same reason as PromoteToAdminAsync above.
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            if (currentRoles.Any())
+            try
             {
-                var removeResult = await _userManager.RemoveFromRolesAsync(identityUser, currentRoles);
-                if (!removeResult.Succeeded) 
-                { 
-                    throw new Exception("Failed to remove existing roles.");
+                // Additive, for the same reason as PromoteToAdminAsync above.
+                if (!await _userManager.IsInRoleAsync(identityUser, Roles.Seller))
+                {
+                    var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Seller);
+                    if (!addResult.Succeeded)
+                    {
+                        throw new Exception("Failed to assign new role.");
+                    }
                 }
-            }
 
-            var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Seller);
-            if (!addResult.Succeeded)
+                // Update Role Change Request Status
+                request.Status = RoleRequestTypes.Approved;
+                request.ReviewedByAdminId = currrentUserId;
+                request.ReviewedAt = DateTime.UtcNow;
+
+                await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
             {
-                throw new Exception("Failed to assign new role.");
+                await transaction.RollbackAsync();
+                throw;
             }
-
-            // Update Role Change Request Status
-            request.Status= RoleRequestTypes.Approved;
-            request.ReviewedByAdminId= currrentUserId;
-            request.ReviewedAt = DateTime.UtcNow;
-
-            await _dbContext.SaveChangesAsync();
-            return true;
         }
 
         public async Task<bool> RejectPromoteRequestAsync(Guid changeRoleRequestId, Guid currrentUserId, string? rejectReason)
@@ -211,11 +227,6 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
             await _dbContext.SaveChangesAsync();
             return existingAd;
-        }
-
-        public Task<Advertisement> BlockAdvertisementAsync(Guid AdvertisementId, Guid currentUserId, string? reason)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<Advertisement> UndoAdvertisementReviewAsync(Guid AdvertisementId)

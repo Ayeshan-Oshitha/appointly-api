@@ -72,7 +72,7 @@ namespace MotorHub.Infrastructure.Persistence.Seeders
                 }
             }
 
-            var domainUser = await dbContext.Users
+            var domainUser = await dbContext.DomainUsers
                 .FirstOrDefaultAsync(u => u.IdentityUserId == identityUser.Id, cancellationToken);
 
             if (domainUser is null)
@@ -81,7 +81,7 @@ namespace MotorHub.Infrastructure.Persistence.Seeders
                 // so it can never be hard-coded - the seller must always be looked up.
                 domainUser = new User(identityUser.Id, SellerFirstName, SellerLastName, SellerPhone);
 
-                await dbContext.Users.AddAsync(domainUser, cancellationToken);
+                await dbContext.DomainUsers.AddAsync(domainUser, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
 
                 logger.LogInformation("Demo seller domain user created: {UserId}", domainUser.Id);

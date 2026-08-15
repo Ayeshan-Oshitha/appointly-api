@@ -24,12 +24,16 @@ namespace MotorHub.Application.Services.RoleChange
         }
         public async Task AddRoleChangeRequest(AddRoleChangeRequestDto request)
         {
-            if (!Roles.All.Contains(request.RequestedRole))
+            // Seller is the only self-requestable role. Admin and SuperAdmin must never be
+            // reachable this way, otherwise the request queue becomes a privilege-escalation path.
+            if (request.RequestedRole != Roles.Seller)
             {
-                throw new BadRequestException("Invalid role specified.");
+                throw new BadRequestException("Only the Seller role can be requested.");
             }
 
-            var user = await _userRepository.UserExistsAsync(request.UserId);
+            var userId = _currentUser.Id;
+
+            var user = await _userRepository.UserExistsAsync(userId);
 
             if (!user)
             {
@@ -37,7 +41,7 @@ namespace MotorHub.Application.Services.RoleChange
             }
 
 
-            await _roleChangeRepository.AddRoleChangeRequestAsync(request.UserId, request.RequestedRole);
+            await _roleChangeRepository.AddRoleChangeRequestAsync(userId, request.RequestedRole);
         }
 
         public async Task<List<RoleChangeResponseDto>> GetAllRequests(RoleChangeRequestQueryDto query)
@@ -55,7 +59,7 @@ namespace MotorHub.Application.Services.RoleChange
                 throw new NotFoundException("Role change request not found.");
             }
 
-            if(existingRequest.UserId != _currentUser.Id)
+            if(existingRequest.UserId != _currentUser.Id && !_currentUser.IsAdmin())
             {
                 throw new ForbiddenException("You do not have permission to delete this role change request. " +
                     "Only The request Creator can delete this");

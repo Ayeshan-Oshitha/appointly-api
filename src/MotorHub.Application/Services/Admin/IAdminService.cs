@@ -11,7 +11,6 @@ namespace MotorHub.Application.Services.Admin
         Task<bool> RejectPromoteRequest(Guid userId, Guid changeRoleRequestId, string? rejectReason);
         Task<AdvertisementResponseDto> ApproveAdvertisement(Guid AdvertisementId);
         Task<AdvertisementResponseDto> RejectAdvertisement(Guid AdvertisementId, string? reason);
-        Task<AdvertisementResponseDto> BlockAdvertisement(Guid AdvertisementId);
         Task<AdvertisementResponseDto> UndoAdvertisementReview(Guid AdvertisementId);
     }
 }

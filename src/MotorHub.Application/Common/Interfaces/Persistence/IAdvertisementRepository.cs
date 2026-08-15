@@ -7,7 +7,7 @@ namespace MotorHub.Application.Common.Interfaces.Persistence
     {
         Task<Advertisement> AddAdvertisementAsync(Advertisement advertisement);
         Task<Advertisement?> GetAdvertisementByIdAsync(Guid id);
-        Task<List<Advertisement>> GetAllAdvertisementsAsync(AdvertisementQueryDto query);
+        Task<List<Advertisement>> GetAllAdvertisementsAsync(AdvertisementQueryDto query, Guid? sellerScopeId, bool isAdmin);
         Task<bool> DeleteAdvertisementAsync(Guid id);
         public Task SaveAdvertisementAsync();
         

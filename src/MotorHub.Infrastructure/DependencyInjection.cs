@@ -1,5 +1,6 @@
 using MotorHub.Application.Common.Interfaces.Persistence;
 using MotorHub.Application.Common.Interfaces.Services;
+using MotorHub.Domain.Common.Constants;
 using MotorHub.Infrastructure.Identity;
 using MotorHub.Infrastructure.Persistence;
 using MotorHub.Infrastructure.Persistence.Repositories;
@@ -130,7 +131,11 @@ namespace MotorHub.Infrastructure
                     };
                 });
 
-            services.AddAuthorization();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(Roles.Admin, Roles.SuperAdmin));
+                options.AddPolicy(Policies.SellerOnly, policy => policy.RequireRole(Roles.Seller));
+            });
 
             return services;
         }

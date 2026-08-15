@@ -85,6 +85,10 @@ namespace MotorHub.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasConversion<int>();
 
+            // Soft-deleted ads are excluded everywhere by default; DeleteAdvertisementAsync
+            // sets the flag instead of removing the row.
+            builder.HasQueryFilter(a => !a.IsDeleted);
+
             builder.HasIndex(a => a.Price);
             builder.HasIndex(a => a.Year);
             builder.HasIndex(a => a.Status);

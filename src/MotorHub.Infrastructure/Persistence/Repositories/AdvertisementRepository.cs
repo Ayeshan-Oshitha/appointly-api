@@ -25,7 +25,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             return await _dbContext.Advertisements.FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<List<Advertisement>> GetAllAdvertisementsAsync(AdvertisementQueryDto query)
+        public async Task<List<Advertisement>> GetAllAdvertisementsAsync(AdvertisementQueryDto query, Guid? sellerScopeId, bool isAdmin)
         {
 
             IQueryable<Advertisement> q = _dbContext.Advertisements
@@ -97,6 +97,19 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
             }
 
+            // Soft-deleted rows are already excluded by the global query filter.
+
+            // Visibility gate. Anonymous callers only ever see Active ads; a signed-in seller
+            // additionally sees their own in any status (so they can read RejectedReason on a
+            // rejection); admins see everything. The caller's own Status filter below then
+            // narrows *within* this set rather than escaping it.
+            if (!isAdmin)
+            {
+                q = sellerScopeId.HasValue
+                    ? q.Where(x => x.Status == AdStatus.Active || x.SellerId == sellerScopeId.Value)
+                    : q.Where(x => x.Status == AdStatus.Active);
+            }
+
             if (query.Status.HasValue)
             {
                 q = q.Where(x => x.Status == query.Status.Value);
@@ -153,7 +166,9 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
 
             // Pagination
-            var page = query.Page ?? 1;
+            // page is clamped as well as pageSize: an unclamped ?page=-5 becomes a negative
+            // Skip, which Postgres rejects as a negative OFFSET.
+            var page = Math.Max(query.Page ?? 1, 1);
             var pageSize = Math.Clamp(query.PageSize ?? 10, 1, 100);
 
             q = q.Skip((page - 1) * pageSize).Take(pageSize);
@@ -171,7 +186,9 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                 return false;
             }
 
-            _dbContext.Advertisements.Remove(exisitingAd);
+            // Soft delete: the ad stays for audit/history, and the global query filter on
+            // Advertisement keeps it out of every read.
+            exisitingAd.IsDeleted = true;
             await _dbContext.SaveChangesAsync();
             return true;
         }

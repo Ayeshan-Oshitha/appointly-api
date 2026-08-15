@@ -49,6 +49,13 @@ namespace MotorHub.Application.Services.Admin
                 throw new BadRequestException("The request does not belong to the specified user");
             }
 
+            // Without this the request is marked Approved for a role the user never asked for -
+            // a Seller request could be closed out by granting Admin.
+            if (request.RequestedRole != Roles.Admin)
+            {
+                throw new BadRequestException($"The request asked for the {request.RequestedRole} role, not {Roles.Admin}");
+            }
+
             var currentUserId = _currentUser.Id;
 
             return await _adminRepository.PromoteToAdminAsync(userId, changeRoleRequestId, currentUserId);
@@ -71,6 +78,12 @@ namespace MotorHub.Application.Services.Admin
             if(request.UserId != userId)
             {
                 throw new BadRequestException("The request does not belong to the specified user");
+            }
+
+            // See PromoteToAdmin: the granted role must be the one that was requested.
+            if (request.RequestedRole != Roles.Seller)
+            {
+                throw new BadRequestException($"The request asked for the {request.RequestedRole} role, not {Roles.Seller}");
             }
 
             var currentUserId = _currentUser.Id;
@@ -142,11 +155,6 @@ namespace MotorHub.Application.Services.Admin
             return _mapper.Map<AdvertisementResponseDto>(rejected);
         }
 
-        public Task<AdvertisementResponseDto> BlockAdvertisement(Guid AdvertisementId)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<AdvertisementResponseDto> UndoAdvertisementReview(Guid AdvertisementId)
         {
             var existingAd = await _advertisementRepository.GetAdvertisementByIdAsync(AdvertisementId);
@@ -161,8 +169,10 @@ namespace MotorHub.Application.Services.Admin
                 throw new BadRequestException("Advertisement is already in pending ");
             }
 
-            await _adminRepository.UndoAdvertisementReviewAsync(AdvertisementId);
-            return _mapper.Map<AdvertisementResponseDto>(existingAd);
+            // Map the repository's result, not the pre-update local, so the response reflects
+            // the row after the undo rather than relying on both loads sharing a change tracker.
+            var reverted = await _adminRepository.UndoAdvertisementReviewAsync(AdvertisementId);
+            return _mapper.Map<AdvertisementResponseDto>(reverted);
         }
     }
 }

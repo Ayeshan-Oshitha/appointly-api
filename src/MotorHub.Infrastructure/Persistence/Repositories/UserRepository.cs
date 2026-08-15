@@ -21,6 +21,12 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
         }
         public async Task<User> AddUserAsync(string firstName, string lastName, string email, string password, string phoneNumber)
         {
+            // Identity's CreateAsync/AddToRoleAsync each commit on their own. Without an
+            // enclosing transaction a failure partway through leaves an Identity account with
+            // no matching domain User: it can authenticate, but every lookup returns null and
+            // the address is taken, so the account can't even be re-registered.
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
             try
             {
 
@@ -35,7 +41,15 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
                 if (!result.Succeeded)
                 {
-                    throw new Exception(result.Errors.First().Description);
+                    // Identity catches the duplicate before Postgres does, so this - not the
+                    // UniqueViolation handler below - is the path a duplicate email takes.
+                    if (result.Errors.Any(e => e.Code == nameof(IdentityErrorDescriber.DuplicateUserName)
+                        || e.Code == nameof(IdentityErrorDescriber.DuplicateEmail)))
+                    {
+                        throw new ConflictException("User with this email already exists.");
+                    }
+
+                    throw new BadRequestException(string.Join("; ", result.Errors.Select(e => e.Description)));
                 }
 
                 var roleResult = await _userManager.AddToRoleAsync(identityUser, Roles.User);
@@ -52,8 +66,10 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                 phoneNumber
                 );
 
-                await _dbContext.Users.AddAsync(user);
+                await _dbContext.DomainUsers.AddAsync(user);
                 await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
                 return user;
             }
 
@@ -61,10 +77,16 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx
                 && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
             {
+                await transaction.RollbackAsync();
                 throw new ConflictException("User with this email already exists.");
-                
+
             }
-            
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+
         }
 
         public async Task<User?> GetUserByEmailAsync(string email)
@@ -76,7 +98,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                 return null;
             }
 
-            return await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUser.Id);
+            return await _dbContext.DomainUsers.FirstOrDefaultAsync(u => u.IdentityUserId == identityUser.Id);
         }
 
         public async Task<User> IsPasswordValid(string email, string password)
@@ -95,7 +117,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                 throw new UnauthorizedException("Invalid email or password.");
             }
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUser.Id);
+            var user = await _dbContext.DomainUsers.FirstOrDefaultAsync(u => u.IdentityUserId == identityUser.Id);
 
             if (user == null)
             {
@@ -107,7 +129,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
         public async Task<UserResponseDto> GetUserProfileByIdAsync(Guid userId)
         {
-            var domainUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var domainUser = await _dbContext.DomainUsers.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (domainUser == null)
             {
@@ -136,7 +158,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
         public async Task<bool> UserExistsAsync(Guid userId)
         {
-            return await _dbContext.Users.AnyAsync(u => u.Id == userId);
+            return await _dbContext.DomainUsers.AnyAsync(u => u.Id == userId);
         }
     }
 }

@@ -1,5 +1,7 @@
 using MotorHub.Application.DTOs.Model;
 using MotorHub.Application.Services.Models;
+using MotorHub.Domain.Common.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MotorHub.Api.Controllers
@@ -25,6 +27,7 @@ namespace MotorHub.Api.Controllers
 
 
         [HttpPost]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> CreateModel([FromBody] CreateModelRequestDto request)
         {
             var model = await _modelService.AddModel(request);
@@ -33,6 +36,7 @@ namespace MotorHub.Api.Controllers
 
 
         [HttpPut("{modelId}")]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> UpdateModel([FromRoute] Guid modelId, [FromBody] UpdateModelRequestDto request)
         {
             var model = await _modelService.UpdateModel(modelId, request);
@@ -41,6 +45,7 @@ namespace MotorHub.Api.Controllers
 
 
         [HttpDelete("{modelId}")]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> DeleteModel([FromRoute] Guid modelId)
         {
             await _modelService.DeleteModel(modelId);

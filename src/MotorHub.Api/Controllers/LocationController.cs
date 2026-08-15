@@ -1,5 +1,7 @@
 using MotorHub.Application.DTOs.Location;
 using MotorHub.Application.Services.Location;
+using MotorHub.Domain.Common.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MotorHub.Api.Controllers
@@ -54,6 +56,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpPost("city")]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> AddCity([FromBody] AddCityRequestDto request)
         {
             var city = await _locationService.AddCity(request);
@@ -61,6 +64,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpPut("city/{cityId}")]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> UpdateCity([FromRoute] Guid cityId, [FromBody] UpdateCityRequestDto request)
         {
             var updatedCity = await _locationService.UpdateCity(cityId, request);
@@ -68,6 +72,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpDelete("city/{cityId}")]
+        [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> DeleteCity([FromRoute] Guid cityId)
         {
             await _locationService.DeleteCity(cityId);

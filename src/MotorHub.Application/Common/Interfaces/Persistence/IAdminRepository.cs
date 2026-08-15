@@ -13,7 +13,6 @@ namespace MotorHub.Application.Common.Interfaces.Persistence
 
         Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertisementId, Guid currentUserId);
         Task<Advertisement> RejectAdvertisementAsync(Guid AdvertisementId, Guid currentUserId, string? reason);
-        Task<Advertisement> BlockAdvertisementAsync(Guid AdvertisementId, Guid currentUserId, string? reason);
         Task<Advertisement> UndoAdvertisementReviewAsync(Guid AdvertisementId);
     }
 }

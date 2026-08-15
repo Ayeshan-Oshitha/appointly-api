@@ -12,7 +12,10 @@ namespace MotorHub.Infrastructure.Persistence
         {   
         }
 
-        public DbSet<User> Users { get; set; }
+        // Deliberately not named Users: IdentityDbContext already exposes
+        // DbSet<ApplicationUser> Users, and shadowing it makes _dbContext.Users mean the
+        // opposite of what an Identity-literate reader expects.
+        public DbSet<User> DomainUsers { get; set; }
         public DbSet<Province> Provinces { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<City> Cities { get; set; }
