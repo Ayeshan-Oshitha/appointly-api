@@ -1,15 +1,11 @@
 using Appointly.Api;
+using Appointly.Api.Extensions;
 using Appointly.Api.Middleware;
 using Appointly.Application;
 using Appointly.Infrastructure;
-using Appointly.Infrastructure.Identity;
 using Appointly.Infrastructure.Persistence;
-using Appointly.Infrastructure.Persistence.Seeders;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +44,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
+// Apply migrations and seed before the app starts serving requests.
+await app.InitializeDatabaseAsync();
+
 
 // Configure the HTTP request pipeline.
 {
@@ -63,20 +62,6 @@ var app = builder.Build();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
-
-
-    // Run Seeders
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppointlyDbContext>();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-
-        await LocationSeeder.SeedAsync(dbContext);
-        await BrandModelSeeder.SeedAsync(dbContext);
-        await AdvertismentSeeder.SeedAsync(dbContext);
-
-        await RoleSeeder.SeedAsync(roleManager);
-    }
 
     app.Run();
 }

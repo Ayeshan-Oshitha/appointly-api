@@ -63,21 +63,21 @@ namespace Appointly.Api.Controllers
         [HttpPost("advertisement/{advertisementId:guid}/approve")]
         public async Task<IActionResult> ApproveAdvertisement([FromRoute] Guid advertisementId)
         {
-            var advertisement = await _adminService.ApproveAdvertisment(advertisementId);
+            var advertisement = await _adminService.ApproveAdvertisement(advertisementId);
             return Ok(advertisement);
         }
 
         [HttpPost("advertisement/{advertisementId:guid}/reject")]
         public async Task<IActionResult> RejectAdvertisement([FromRoute] Guid advertisementId, [FromBody] RejectAdvertisementRequestDto requestDto)
         {
-            var advertisement = await _adminService.RejectAdvertisment(advertisementId, requestDto.RejectReason);
+            var advertisement = await _adminService.RejectAdvertisement(advertisementId, requestDto.RejectReason);
             return Ok(advertisement);
         }
 
         [HttpPost("advertisement/{advertisementId:guid}/undo")]
         public async Task<IActionResult> UndoAdvertisementReview([FromRoute] Guid advertisementId)
         {
-            var advertisement = await _adminService.UndoAdvertismentReview(advertisementId);
+            var advertisement = await _adminService.UndoAdvertisementReview(advertisementId);
             return Ok(advertisement);
         }
     }

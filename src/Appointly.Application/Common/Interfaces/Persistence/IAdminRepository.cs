@@ -1,4 +1,4 @@
-﻿using Appointly.Application.DTOs.Admin;
+using Appointly.Application.DTOs.Admin;
 using Appointly.Domain.Entities;
 
 namespace Appointly.Application.Common.Interfaces.Persistence
@@ -11,9 +11,9 @@ namespace Appointly.Application.Common.Interfaces.Persistence
         Task<bool> RejectPromoteRequestAsync(Guid changeRoleRequestId, Guid currrentUserId, string? rejectReason);
         Task<RoleChangeRequest?> GetExistingPendingRequestsByUserIdAsync(Guid userId);
 
-        Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertismentId, Guid currentUserId);
-        Task<Advertisement> RejectAdvertisementAsync(Guid AdvertismentId, Guid currentUserId, string? reason);
-        Task<Advertisement> BlockAdvertisementAsync(Guid AdvertismentId, Guid currentUserId, string? reason);
-        Task<Advertisement> UndoAdvertismentReviewAsync(Guid AdvertismentId);
+        Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertisementId, Guid currentUserId);
+        Task<Advertisement> RejectAdvertisementAsync(Guid AdvertisementId, Guid currentUserId, string? reason);
+        Task<Advertisement> BlockAdvertisementAsync(Guid AdvertisementId, Guid currentUserId, string? reason);
+        Task<Advertisement> UndoAdvertisementReviewAsync(Guid AdvertisementId);
     }
 }

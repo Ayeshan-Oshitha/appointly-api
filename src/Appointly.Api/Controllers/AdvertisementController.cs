@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Appointly.Api.Controllers
 {
-    [Route("advertisment")]
+    [Route("advertisement")]
     [ApiController]
     public class AdvertisementController : ControllerBase
     {
@@ -18,14 +18,14 @@ namespace Appointly.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAdvertisements([FromQuery] AdvertisementQueryDto query)
         {
-            var advertisments = await _advertisementService.GetAllAdvertisments(query);
-            return Ok(advertisments);
+            var advertisements = await _advertisementService.GetAllAdvertisements(query);
+            return Ok(advertisements);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateAdvertisement([FromBody] CreateAdvertisementRequestDto request)
         {
-            var advertisement = await _advertisementService.AddAdvertisment(request);
+            var advertisement = await _advertisementService.AddAdvertisement(request);
             return Ok(advertisement);
         }
 

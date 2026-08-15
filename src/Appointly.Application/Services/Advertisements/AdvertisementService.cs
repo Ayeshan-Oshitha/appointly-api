@@ -10,23 +10,23 @@ namespace Appointly.Application.Services.Advertisements
     public class AdvertisementService : IAdvertisementService
     {
 
-        private readonly IAdvertismentRepository _advertismentRepository;
+        private readonly IAdvertisementRepository _advertisementRepository;
         private readonly IModelRepository _modelRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IMapper _mapper;
-        public AdvertisementService(IAdvertismentRepository advertismentRepository, IModelRepository modelRepository, ICurrentUser currentUser, IMapper mapper)
+        public AdvertisementService(IAdvertisementRepository advertisementRepository, IModelRepository modelRepository, ICurrentUser currentUser, IMapper mapper)
         {
-            _advertismentRepository = advertismentRepository;
+            _advertisementRepository = advertisementRepository;
             _modelRepository = modelRepository;
             _currentUser = currentUser;
             _mapper = mapper;
         }
-        public async Task<AdvertisementResponseDto> AddAdvertisment(CreateAdvertisementRequestDto request)
+        public async Task<AdvertisementResponseDto> AddAdvertisement(CreateAdvertisementRequestDto request)
         {
 
             await ValidateBrandModelRelationship(request.ModelId, request.BrandId);
 
-            var advertisment = new Advertisement
+            var advertisement = new Advertisement
             {
                 Title = request.Title,
                 Description = request.Description,
@@ -49,19 +49,19 @@ namespace Appointly.Application.Services.Advertisements
                 IsBiddable = request.IsBiddable
             };
 
-           var addedAdvertisment = await _advertismentRepository.AddAdvertismentAsync(advertisment);
-           return _mapper.Map<AdvertisementResponseDto>(addedAdvertisment);
+           var addedAdvertisement = await _advertisementRepository.AddAdvertisementAsync(advertisement);
+           return _mapper.Map<AdvertisementResponseDto>(addedAdvertisement);
         }
 
-        public async  Task<List<AdvertisementDetailResponseDto>> GetAllAdvertisments(AdvertisementQueryDto query)
+        public async  Task<List<AdvertisementDetailResponseDto>> GetAllAdvertisements(AdvertisementQueryDto query)
         {
-            var advertisments = await _advertismentRepository.GetAllAdvertismentsAsync(query);
-            return _mapper.Map<List<AdvertisementDetailResponseDto>>(advertisments);
+            var advertisements = await _advertisementRepository.GetAllAdvertisementsAsync(query);
+            return _mapper.Map<List<AdvertisementDetailResponseDto>>(advertisements);
         }
 
         public async Task<AdvertisementResponseDto> UpdateAdvertisement(Guid id, UpdateAdvertisementRequestDto request)
         {
-            var existingAdvertisement = await _advertismentRepository.GetAdvertismentByIdAsync(id);
+            var existingAdvertisement = await _advertisementRepository.GetAdvertisementByIdAsync(id);
 
             if (existingAdvertisement == null)
             {
@@ -72,20 +72,20 @@ namespace Appointly.Application.Services.Advertisements
 
             existingAdvertisement.UpdatedAt = DateTime.UtcNow;
 
-            await _advertismentRepository.SaveAdvertisementAsync();
+            await _advertisementRepository.SaveAdvertisementAsync();
             return _mapper.Map<AdvertisementResponseDto>(existingAdvertisement);
         }
 
         public async Task DeleteAdvertisement(Guid id)
         {
-            var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(id);
+            var existingAd = await _advertisementRepository.GetAdvertisementByIdAsync(id);
 
             if(existingAd == null)
             {
                 throw new NotFoundException("Advertisement not found.");
             }
 
-            var deleted = await _advertismentRepository.DeleteAdvertisementAsync(id);
+            var deleted = await _advertisementRepository.DeleteAdvertisementAsync(id);
 
             if (!deleted)
             {

@@ -1,4 +1,4 @@
-﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.Common.Interfaces.Services;
 using Appointly.Infrastructure.Identity;
 using Appointly.Infrastructure.Persistence;
@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text.Json;
@@ -18,8 +19,8 @@ namespace Appointly.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services , 
-            ConfigurationManager configuration
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services ,
+            IConfiguration configuration
             )
         {
             services.AddAuth(configuration);
@@ -29,7 +30,7 @@ namespace Appointly.Infrastructure
             services.AddScoped<ILocationRepository, LocationRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<IModelRepository, ModelRepository>();
-            services.AddScoped<IAdvertismentRepository, AdvertisementRepository>();
+            services.AddScoped<IAdvertisementRepository, AdvertisementRepository>();
             services.AddScoped<IAdminRepository, AdminRepository>();
             services.AddScoped<IRoleChangeRepository,RoleChangeRepository>();
 
@@ -44,19 +45,26 @@ namespace Appointly.Infrastructure
 
         public static IServiceCollection AddAuth(
             this IServiceCollection services,
-            ConfigurationManager configuration)
+            IConfiguration configuration)
         {
-
+            // ValidateDataAnnotations() supplies the rules; without it ValidateOnStart() has
+            // nothing to run and a missing or too-short secret passes silently.
             services.AddOptions<JwtSettings>()
                 .Bind(configuration.GetSection(JwtSettings.SectionName))
+                .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()!;
-
             services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer( options => 
-                
+                .AddJwtBearer();
+
+            // Configured through the options pipeline rather than an eager
+            // configuration.Get<JwtSettings>() so the bearer handler and JwtTokenGenerator
+            // (which takes IOptions<JwtSettings>) can never read different values.
+            services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+                .Configure<IOptions<JwtSettings>>((options, jwtSettingsOptions) =>
                 {
+                    var jwtSettings = jwtSettingsOptions.Value;
+
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
@@ -120,13 +128,7 @@ namespace Appointly.Infrastructure
                             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
                         }
                     };
-
-                }
-
-
-
-
-            );
+                });
 
             services.AddAuthorization();
 

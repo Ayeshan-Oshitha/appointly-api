@@ -1,14 +1,14 @@
-﻿using Appointly.Domain.Entities;
+using Appointly.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Appointly.Infrastructure.Persistence.Configurations
 {
-    internal class AdvertismentConfiguration : IEntityTypeConfiguration<Advertisement>
+    internal class AdvertisementConfiguration : IEntityTypeConfiguration<Advertisement>
     {
         public void Configure(EntityTypeBuilder<Advertisement> builder)
         {
-            builder.ToTable("Advertisments");
+            builder.ToTable("Advertisements");
 
             builder.HasKey(a => a.Id);
 

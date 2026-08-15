@@ -1,4 +1,4 @@
-﻿using Appointly.Application.DTOs.Admin;
+using Appointly.Application.DTOs.Admin;
 using Appointly.Application.DTOs.Advertisements;
 
 namespace Appointly.Application.Services.Admin
@@ -9,9 +9,9 @@ namespace Appointly.Application.Services.Admin
         Task<bool> PromoteToAdmin(Guid userId, Guid changeRoleRequestId);
         Task<bool> PromoteToSeller(Guid userId, Guid changeRoleRequestId);
         Task<bool> RejectPromoteRequest(Guid userId, Guid changeRoleRequestId, string? rejectReason);
-        Task<AdvertisementResponseDto> ApproveAdvertisment(Guid AdvertismentId);
-        Task<AdvertisementResponseDto> RejectAdvertisment(Guid AdvertismentId, string? reason);
-        Task<AdvertisementResponseDto> BlockAdvertisment(Guid AdvertismentId);
-        Task<AdvertisementResponseDto> UndoAdvertismentReview(Guid AdvertismentId);
+        Task<AdvertisementResponseDto> ApproveAdvertisement(Guid AdvertisementId);
+        Task<AdvertisementResponseDto> RejectAdvertisement(Guid AdvertisementId, string? reason);
+        Task<AdvertisementResponseDto> BlockAdvertisement(Guid AdvertisementId);
+        Task<AdvertisementResponseDto> UndoAdvertisementReview(Guid AdvertisementId);
     }
 }

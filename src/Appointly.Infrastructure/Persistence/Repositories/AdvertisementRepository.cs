@@ -1,4 +1,4 @@
-﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.DTOs.Advertisements;
 using Appointly.Domain.Common.Enum;
 using Appointly.Domain.Entities;
@@ -6,26 +6,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Appointly.Infrastructure.Persistence.Repositories
 {
-    public class AdvertisementRepository : IAdvertismentRepository
+    public class AdvertisementRepository : IAdvertisementRepository
     {
         private readonly AppointlyDbContext _dbContext;
         public AdvertisementRepository(AppointlyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
-        public async Task<Advertisement> AddAdvertismentAsync(Advertisement advertisment)
+        public async Task<Advertisement> AddAdvertisementAsync(Advertisement advertisement)
         {
-            _dbContext.Advertisements.Add(advertisment);
+            _dbContext.Advertisements.Add(advertisement);
             await  _dbContext.SaveChangesAsync();
-            return advertisment;
+            return advertisement;
         }
 
-        public async Task<Advertisement?> GetAdvertismentByIdAsync(Guid id)
+        public async Task<Advertisement?> GetAdvertisementByIdAsync(Guid id)
         {
             return await _dbContext.Advertisements.FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<List<Advertisement>> GetAllAdvertismentsAsync(AdvertisementQueryDto query)
+        public async Task<List<Advertisement>> GetAllAdvertisementsAsync(AdvertisementQueryDto query)
         {
 
             IQueryable<Advertisement> q = _dbContext.Advertisements

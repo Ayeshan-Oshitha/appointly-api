@@ -1,4 +1,4 @@
-﻿using Appointly.Application.Common.CurrentUser;
+using Appointly.Application.Common.CurrentUser;
 using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.DTOs.Admin;
 using Appointly.Application.DTOs.Advertisements;
@@ -14,14 +14,14 @@ namespace Appointly.Application.Services.Admin
         private readonly IAdminRepository _adminRepository;
         private readonly IRoleChangeRepository _roleChangeRepository;
         private readonly ICurrentUser _currentUser;
-        private readonly IAdvertismentRepository _advertismentRepository;
+        private readonly IAdvertisementRepository _advertisementRepository;
         private readonly IMapper _mapper;
-        public AdminService(IAdminRepository adminRepository, IRoleChangeRepository roleChangeRepository, ICurrentUser currentUser, IAdvertismentRepository advertismentRepository, IMapper mapper)
+        public AdminService(IAdminRepository adminRepository, IRoleChangeRepository roleChangeRepository, ICurrentUser currentUser, IAdvertisementRepository advertisementRepository, IMapper mapper)
         {
             _adminRepository = adminRepository;
             _roleChangeRepository = roleChangeRepository;
             _currentUser = currentUser;
-            _advertismentRepository = advertismentRepository;
+            _advertisementRepository = advertisementRepository;
             _mapper = mapper;
         }
 
@@ -102,9 +102,9 @@ namespace Appointly.Application.Services.Admin
             return await _adminRepository.RejectPromoteRequestAsync(changeRoleRequestId, currentUserId, rejectReason);
         }
 
-        public async Task<AdvertisementResponseDto> ApproveAdvertisment(Guid AdvertismentId)
+        public async Task<AdvertisementResponseDto> ApproveAdvertisement(Guid AdvertisementId)
         {
-            var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(AdvertismentId);
+            var existingAd = await _advertisementRepository.GetAdvertisementByIdAsync(AdvertisementId);
 
             if (existingAd == null)
             {
@@ -118,13 +118,13 @@ namespace Appointly.Application.Services.Admin
 
              var currentUserId = _currentUser.Id;
 
-            var approved = await _adminRepository.ApproveAdvertisementAsync(AdvertismentId, currentUserId);
+            var approved = await _adminRepository.ApproveAdvertisementAsync(AdvertisementId, currentUserId);
             return _mapper.Map<AdvertisementResponseDto>(approved);
         }
 
-        public async Task<AdvertisementResponseDto> RejectAdvertisment(Guid AdvertismentId, string? reason)
+        public async Task<AdvertisementResponseDto> RejectAdvertisement(Guid AdvertisementId, string? reason)
         {
-            var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(AdvertismentId);
+            var existingAd = await _advertisementRepository.GetAdvertisementByIdAsync(AdvertisementId);
 
             if (existingAd == null)
             {
@@ -138,18 +138,18 @@ namespace Appointly.Application.Services.Admin
 
             var currentUserId = _currentUser.Id;
 
-            var rejected = await _adminRepository.RejectAdvertisementAsync(AdvertismentId, currentUserId, reason);
+            var rejected = await _adminRepository.RejectAdvertisementAsync(AdvertisementId, currentUserId, reason);
             return _mapper.Map<AdvertisementResponseDto>(rejected);
         }
 
-        public Task<AdvertisementResponseDto> BlockAdvertisment(Guid AdvertismentId)
+        public Task<AdvertisementResponseDto> BlockAdvertisement(Guid AdvertisementId)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<AdvertisementResponseDto> UndoAdvertismentReview(Guid AdvertismentId)
+        public async Task<AdvertisementResponseDto> UndoAdvertisementReview(Guid AdvertisementId)
         {
-            var existingAd = await _advertismentRepository.GetAdvertismentByIdAsync(AdvertismentId);
+            var existingAd = await _advertisementRepository.GetAdvertisementByIdAsync(AdvertisementId);
 
             if (existingAd == null)
             {
@@ -161,7 +161,7 @@ namespace Appointly.Application.Services.Admin
                 throw new BadRequestException("Advertisement is already in pending ");
             }
 
-            await _adminRepository.UndoAdvertismentReviewAsync(AdvertismentId);
+            await _adminRepository.UndoAdvertisementReviewAsync(AdvertisementId);
             return _mapper.Map<AdvertisementResponseDto>(existingAd);
         }
     }

@@ -1,4 +1,4 @@
-﻿using Appointly.Application.Common.Interfaces.Persistence;
+using Appointly.Application.Common.Interfaces.Persistence;
 using Appointly.Application.DTOs.Admin;
 using Appointly.Domain.Common.Constants;
 using Appointly.Domain.Common.Enum;
@@ -178,9 +178,9 @@ namespace Appointly.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == RoleRequestTypes.Pending);
         }
 
-        public async Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertismentId, Guid currentUserId)
+        public async Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertisementId, Guid currentUserId)
         {
-            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertismentId);
+            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertisementId);
 
             if (existingAd == null)
             {
@@ -195,9 +195,9 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return existingAd;
         }
 
-        public async Task<Advertisement> RejectAdvertisementAsync(Guid AdvertismentId, Guid currentUserId, string? reason)
+        public async Task<Advertisement> RejectAdvertisementAsync(Guid AdvertisementId, Guid currentUserId, string? reason)
         {
-            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertismentId);
+            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertisementId);
 
             if (existingAd == null)
             {
@@ -213,14 +213,14 @@ namespace Appointly.Infrastructure.Persistence.Repositories
             return existingAd;
         }
 
-        public Task<Advertisement> BlockAdvertisementAsync(Guid AdvertismentId, Guid currentUserId, string? reason)
+        public Task<Advertisement> BlockAdvertisementAsync(Guid AdvertisementId, Guid currentUserId, string? reason)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Advertisement> UndoAdvertismentReviewAsync(Guid AdvertismentId)
+        public async Task<Advertisement> UndoAdvertisementReviewAsync(Guid AdvertisementId)
         {
-            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertismentId);
+            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertisementId);
 
             if (existingAd == null)
             {
