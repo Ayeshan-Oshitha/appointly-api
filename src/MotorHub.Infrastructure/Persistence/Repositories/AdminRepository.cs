@@ -188,57 +188,101 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             return true;
         }
 
+        // The three review transitions below carry their precondition in the UPDATE's WHERE clause
+        // rather than checking it first and writing after. AdminService does check the status, but
+        // that check and the write are separate round trips: two admins reviewing the same ad both
+        // passed the check and both wrote, so one decision was silently overwritten. Gating on the
+        // expected status makes the transition a single atomic compare-and-swap - the loser now
+        // affects zero rows and gets a 409 instead of quietly losing.
         public async Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertisementId, Guid currentUserId)
         {
-            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertisementId);
+            var reviewedAt = DateTime.UtcNow;
 
-            if (existingAd == null)
+            var rowsAffected = await _dbContext.Advertisements
+                .Where(x => x.Id == AdvertisementId && x.Status == AdStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.Status, AdStatus.Active)
+                    .SetProperty(x => x.ReviewByAdminId, (Guid?)currentUserId)
+                    .SetProperty(x => x.ReviewedAt, (DateTime?)reviewedAt));
+
+            if (rowsAffected == 0)
             {
-                throw new NotFoundException("Advertisement not found.");
+                throw await ReviewFailureAsync(AdvertisementId);
             }
 
-            existingAd.Status = AdStatus.Active;
-            existingAd.ReviewByAdminId = currentUserId;
-            existingAd.ReviewedAt = DateTime.UtcNow;
-
-            await _dbContext.SaveChangesAsync();
-            return existingAd;
+            return await ReloadAdvertisementAsync(AdvertisementId);
         }
 
         public async Task<Advertisement> RejectAdvertisementAsync(Guid AdvertisementId, Guid currentUserId, string? reason)
         {
-            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertisementId);
+            var reviewedAt = DateTime.UtcNow;
 
-            if (existingAd == null)
+            var rowsAffected = await _dbContext.Advertisements
+                .Where(x => x.Id == AdvertisementId && x.Status == AdStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.Status, AdStatus.Rejected)
+                    .SetProperty(x => x.RejectedReason, reason)
+                    .SetProperty(x => x.ReviewByAdminId, (Guid?)currentUserId)
+                    .SetProperty(x => x.ReviewedAt, (DateTime?)reviewedAt));
+
+            if (rowsAffected == 0)
             {
-                throw new NotFoundException("Advertisement not found.");
+                throw await ReviewFailureAsync(AdvertisementId);
             }
 
-            existingAd.Status = AdStatus.Rejected;
-            existingAd.RejectedReason = reason ?? null;
-            existingAd.ReviewByAdminId = currentUserId;
-            existingAd.ReviewedAt = DateTime.UtcNow;
-
-            await _dbContext.SaveChangesAsync();
-            return existingAd;
+            return await ReloadAdvertisementAsync(AdvertisementId);
         }
 
         public async Task<Advertisement> UndoAdvertisementReviewAsync(Guid AdvertisementId)
         {
-            var existingAd = await _dbContext.Advertisements.FirstOrDefaultAsync(x => x.Id == AdvertisementId);
+            var rowsAffected = await _dbContext.Advertisements
+                .Where(x => x.Id == AdvertisementId && x.Status != AdStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.Status, AdStatus.Pending)
+                    .SetProperty(x => x.RejectedReason, (string?)null)
+                    .SetProperty(x => x.ReviewByAdminId, (Guid?)null)
+                    .SetProperty(x => x.ReviewedAt, (DateTime?)null));
 
-            if (existingAd == null)
+            if (rowsAffected == 0)
+            {
+                throw await ReviewFailureAsync(AdvertisementId,
+                    "Advertisement review was already undone by another admin.");
+            }
+
+            return await ReloadAdvertisementAsync(AdvertisementId);
+        }
+
+        // Zero rows affected means either the ad is gone or another admin got there first;
+        // only a second lookup can tell those apart, and it only runs on the failure path.
+        private async Task<Exception> ReviewFailureAsync(
+            Guid advertisementId,
+            string conflictMessage = "Advertisement was already reviewed by another admin.")
+        {
+            var exists = await _dbContext.Advertisements
+                .AsNoTracking()
+                .AnyAsync(x => x.Id == advertisementId);
+
+            return exists
+                ? new ConflictException(conflictMessage)
+                : new NotFoundException("Advertisement not found.");
+        }
+
+        // ExecuteUpdateAsync writes straight to the database and never touches the change tracker,
+        // so the instance AdminService loaded before calling in is now stale. Reload untracked -
+        // a tracked query would resolve back to that same stale instance and the response would
+        // show the pre-update status.
+        private async Task<Advertisement> ReloadAdvertisementAsync(Guid advertisementId)
+        {
+            var advertisement = await _dbContext.Advertisements
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == advertisementId);
+
+            if (advertisement == null)
             {
                 throw new NotFoundException("Advertisement not found.");
             }
 
-            existingAd.Status = AdStatus.Pending;
-            existingAd.RejectedReason = null;
-            existingAd.ReviewByAdminId = null;
-            existingAd.ReviewedAt = null;
-
-            await _dbContext.SaveChangesAsync();
-            return existingAd;
+            return advertisement;
         }
     }
 }

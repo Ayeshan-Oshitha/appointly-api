@@ -1,6 +1,8 @@
 ﻿using MotorHub.Application.Common.Interfaces.Persistence;
 using MotorHub.Domain.Entities;
+using MotorHub.Domain.Infrastructure.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace MotorHub.Infrastructure.Persistence.Repositories
 {
@@ -16,7 +18,20 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
         public async Task<Brand> AddBrandAsync(Brand brand)
         {
             _dbContext.Brands.Add(brand);
-            await _dbContext.SaveChangesAsync();
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            // The service checks the slug first, but another request can insert the same slug
+            // between that check and this save. The unique index catches it either way; without
+            // this the racing caller would get a 500 instead of the 409 the check produces.
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx
+                && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                throw new ConflictException("Brand with the same name already exists.");
+            }
+
             return brand;
         }
 

@@ -93,16 +93,26 @@ namespace MotorHub.Application.Services.Advertisements
                 await ValidateCityExists(request.CityId.Value);
             }
 
+            var materialBefore = MaterialFingerprint(existingAdvertisement);
+
             _mapper.Map(request, existingAdvertisement);
 
             existingAdvertisement.UpdatedAt = DateTime.UtcNow;
 
             // Edited content has to be reviewed again, otherwise a seller can get a bland ad
             // approved and then rewrite it into something that would never have passed.
-            existingAdvertisement.Status = AdStatus.Pending;
-            existingAdvertisement.RejectedReason = null;
-            existingAdvertisement.ReviewByAdminId = null;
-            existingAdvertisement.ReviewedAt = null;
+            //
+            // Only moderation-relevant fields trigger this. Resetting on every PATCH pulled a
+            // live ad out of the public listing (which shows Active only) for a phone-number
+            // correction or an IsWhatsapp toggle - a re-review queue entry for something no
+            // moderator needs to look at.
+            if (!materialBefore.Equals(MaterialFingerprint(existingAdvertisement)))
+            {
+                existingAdvertisement.Status = AdStatus.Pending;
+                existingAdvertisement.RejectedReason = null;
+                existingAdvertisement.ReviewByAdminId = null;
+                existingAdvertisement.ReviewedAt = null;
+            }
 
             await _advertisementRepository.SaveAdvertisementAsync();
             return _mapper.Map<AdvertisementResponseDto>(existingAdvertisement);
@@ -126,6 +136,24 @@ namespace MotorHub.Application.Services.Advertisements
                 throw new NotFoundException("Failed to delete the advertisement.");
             }
         }
+
+
+        // The fields a moderator actually reviews. Everything absent from this tuple - contact
+        // details, IsHidePhone, IsWhatsapp, IsBiddable - can be edited without sending an
+        // approved ad back to the queue. Move a field in or out of here to change that.
+        private static object MaterialFingerprint(Advertisement advertisement) => (
+            advertisement.Title,
+            advertisement.Description,
+            advertisement.Price,
+            advertisement.Year,
+            advertisement.EngineCapacity,
+            advertisement.FuelType,
+            advertisement.TransmissionType,
+            advertisement.VehicleCondition,
+            advertisement.BrandId,
+            advertisement.ModelId,
+            advertisement.CityId,
+            advertisement.Address);
 
 
         private void EnsureCanModify(Advertisement advertisement)

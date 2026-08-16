@@ -65,7 +65,7 @@ namespace MotorHub.Application.Services.Location
 
             if (await _locationRepository.CitySlugExistsAsync(city.Slug))
             {
-                throw new BadRequestException("City with the same name already exists");
+                throw new ConflictException("City with the same name already exists");
             }
 
             var addedCity = await _locationRepository.AddCityAsync(city);

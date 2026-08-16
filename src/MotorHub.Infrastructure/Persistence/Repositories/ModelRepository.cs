@@ -1,6 +1,8 @@
 ﻿using MotorHub.Application.Common.Interfaces.Persistence;
 using MotorHub.Domain.Entities;
+using MotorHub.Domain.Infrastructure.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace MotorHub.Infrastructure.Persistence.Repositories
 {
@@ -14,7 +16,19 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
         public async Task<Model> AddModelAsync(Model model)
         {
             _dbContext.Models.Add(model);
-            await _dbContext.SaveChangesAsync();
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            // Slug uniqueness is checked in the service, but that check and this save are not
+            // atomic; see the same guard in BrandRepository.AddBrandAsync.
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx
+                && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                throw new ConflictException("Model with the same name already exists.");
+            }
+
             return model;
         }
 
