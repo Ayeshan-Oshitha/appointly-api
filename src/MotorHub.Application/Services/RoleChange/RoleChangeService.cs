@@ -24,11 +24,19 @@ namespace MotorHub.Application.Services.RoleChange
         }
         public async Task AddRoleChangeRequest(AddRoleChangeRequestDto request)
         {
-            // Seller is the only self-requestable role. Admin and SuperAdmin must never be
-            // reachable this way, otherwise the request queue becomes a privilege-escalation path.
-            if (request.RequestedRole != Roles.Seller)
+            // Requesting a role is not the same as receiving one: every request lands Pending and
+            // only an admin can approve it (AdminController is behind Policies.AdminOnly), so the
+            // queue is not an escalation path. Seller and Admin are both requestable - previously
+            // only Seller was, which made AdminService.PromoteToAdmin unreachable, since no
+            // Admin-role request could ever exist for it to approve.
+            //
+            // User is excluded because every account already has it from registration, and
+            // SuperAdmin because nothing in the codebase grants it: it is an out-of-band role and
+            // must stay one, or approving a request here would mint the highest privilege level.
+            if (request.RequestedRole != Roles.Seller && request.RequestedRole != Roles.Admin)
             {
-                throw new BadRequestException("Only the Seller role can be requested.");
+                throw new BadRequestException(
+                    $"Only the {Roles.Seller} and {Roles.Admin} roles can be requested.");
             }
 
             var userId = _currentUser.Id;

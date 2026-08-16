@@ -5,7 +5,7 @@ namespace MotorHub.Application.DTOs.Location
     public class UpdateCityRequestDto
     {
         [MinLength(1)]
-        [MaxLength(100)]
+        [MaxLength(200)]
         public string? Name { get; set; }
 
         public Guid? ProvinceId { get; set; }

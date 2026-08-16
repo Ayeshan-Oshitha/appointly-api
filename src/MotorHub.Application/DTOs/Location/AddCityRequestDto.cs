@@ -6,7 +6,7 @@ namespace MotorHub.Application.DTOs.Location
     {
         [Required]
         [MinLength(1)]
-        [MaxLength(100)]
+        [MaxLength(200)]
         public required string Name { get; set; }
 
         [Required]

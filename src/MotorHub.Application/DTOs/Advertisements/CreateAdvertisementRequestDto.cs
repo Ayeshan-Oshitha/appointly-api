@@ -64,7 +64,7 @@ namespace MotorHub.Application.DTOs.Advertisements
 
         public bool IsHidePhone { get; set; }
 
-        public bool? IsWhatsapp { get; set; }
+        public bool IsWhatsapp { get; set; }
 
         public bool IsBiddable { get; set; }
     }

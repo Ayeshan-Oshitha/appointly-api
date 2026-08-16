@@ -29,7 +29,7 @@ namespace MotorHub.Api.Controllers
         public async Task<IActionResult> CreateAdvertisement([FromBody] CreateAdvertisementRequestDto request)
         {
             var advertisement = await _advertisementService.AddAdvertisement(request);
-            return Ok(advertisement);
+            return StatusCode(StatusCodes.Status201Created, advertisement);
         }
 
 
@@ -47,7 +47,7 @@ namespace MotorHub.Api.Controllers
         public async Task<IActionResult> DeleteAdvertisement([FromRoute] Guid id)
         {
             await _advertisementService.DeleteAdvertisement(id);
-            return Ok("Advertisement deleted successfully");
+            return NoContent();
         }
     }
 }

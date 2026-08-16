@@ -151,7 +151,9 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                 FirstName = domainUser.FirstName,
                 LastName = domainUser.LastName,
                 Email = identityUser.Email,
-                PhoneNumber = identityUser.PhoneNumber,
+                // The domain User is the source of truth for the phone number - registration
+                // writes it to both tables, and GetAllUsersAsync already reads it from here.
+                PhoneNumber = domainUser.PhoneNumber,
                 Roles = roles.ToList()
             };
         }

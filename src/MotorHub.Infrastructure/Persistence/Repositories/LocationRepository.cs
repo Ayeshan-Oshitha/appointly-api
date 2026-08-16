@@ -1,8 +1,6 @@
 ﻿using MotorHub.Application.Common.Interfaces.Persistence;
 using MotorHub.Domain.Entities;
-using MotorHub.Domain.Infrastructure.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace MotorHub.Infrastructure.Persistence.Repositories
 {
@@ -43,6 +41,15 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             return city;
         }
 
+        public Task<City?> GetCityDetailAsync(Guid cityId)
+        {
+            return _dbContext.Cities
+                .AsNoTracking()
+                .Include(c => c.Province)
+                .Include(c => c.District)
+                .FirstOrDefaultAsync(c => c.Id == cityId);
+        }
+
         public async Task<List<City>> GetCitiesByDistrictIdAsync(Guid? districtId)
         {
             IQueryable<City> cities =  _dbContext.Cities.AsNoTracking().Include(c => c.Province).Include(c => c.District);
@@ -71,25 +78,13 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
         {
 
             _dbContext.Cities.Add(city);
-
-            try
-            {
-                await _dbContext.SaveChangesAsync();
-            }
-            // Slug uniqueness is checked in the service, but that check and this save are not
-            // atomic; see the same guard in BrandRepository.AddBrandAsync.
-            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx
-                && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
-            {
-                throw new ConflictException("City with the same name already exists");
-            }
-
+            await _dbContext.SaveChangesOrConflictAsync("City with the same name already exists");
             return city;
         }
 
         public Task SaveChangesAsync()
         {
-            return _dbContext.SaveChangesAsync();
+            return _dbContext.SaveChangesOrConflictAsync("City with the same name already exists");
         }
 
         public async Task<bool> DeleteAsync(Guid cityId)
@@ -106,9 +101,10 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             return true;
         }
 
-        public Task<bool> CitySlugExistsAsync(string slug)
+        public Task<bool> CitySlugExistsAsync(string slug, Guid? excludeCityId = null)
         {
-            return _dbContext.Cities.AnyAsync(c => c.Slug == slug);
+            return _dbContext.Cities.AnyAsync(c => c.Slug == slug
+                && (!excludeCityId.HasValue || c.Id != excludeCityId.Value));
         }
     }
 }

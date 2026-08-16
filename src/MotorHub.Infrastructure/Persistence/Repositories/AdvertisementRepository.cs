@@ -32,9 +32,9 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                                 .AsNoTracking()
                                 .Include(a => a.Brand)
                                 .Include(a => a.Model)
-                                .Include(a => a.City)
+                                .Include(a => a.City!)
                                     .ThenInclude(c => c.District)
-                                .Include(a => a.City)
+                                .Include(a => a.City!)
                                     .ThenInclude(c => c.Province)
                                 .Include(a => a.Seller)
                                 .Include(a => a.ReviewByAdmin);
@@ -42,12 +42,16 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
             if (!string.IsNullOrEmpty(query.Search))
             {
+                // ContactEmail is deliberately not searchable: this endpoint serves anonymous
+                // callers, and matching on it turns the listing into an address oracle - probing
+                // "@gmail.com" enumerates sellers and any specific address can be confirmed.
+                var pattern = $"%{LikePattern.EscapeWildcards(query.Search)}%";
+
                 q = q.Where(x =>
                     // PostgreSQL ILIKE for case-insensitive search
-                    EF.Functions.ILike(x.Title, $"%{query.Search}%") ||
-                    EF.Functions.ILike(x.Description, $"%{query.Search}%") ||
-                    EF.Functions.ILike(x.ContactName, $"%{query.Search}%") ||
-                    EF.Functions.ILike(x.ContactEmail, $"%{query.Search}%")
+                    EF.Functions.ILike(x.Title, pattern, LikePattern.EscapeCharacter) ||
+                    EF.Functions.ILike(x.Description, pattern, LikePattern.EscapeCharacter) ||
+                    EF.Functions.ILike(x.ContactName, pattern, LikePattern.EscapeCharacter)
                 );
             }
 

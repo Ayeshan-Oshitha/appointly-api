@@ -46,9 +46,12 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
             if (!string.IsNullOrEmpty(query.Search))
             {
+                var pattern = $"%{LikePattern.EscapeWildcards(query.Search)}%";
+
+                // User is non-null for every row the Include above returns; the FK is required.
                 q = q.Where(x =>
-                EF.Functions.ILike(x.User.FirstName, $"%{query.Search}%") ||
-                EF.Functions.ILike(x.User.LastName, $"%{query.Search}%")
+                EF.Functions.ILike(x.User!.FirstName, pattern, LikePattern.EscapeCharacter) ||
+                EF.Functions.ILike(x.User!.LastName, pattern, LikePattern.EscapeCharacter)
                 );
             }
 

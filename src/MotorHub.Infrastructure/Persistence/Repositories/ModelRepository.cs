@@ -1,8 +1,6 @@
 ﻿using MotorHub.Application.Common.Interfaces.Persistence;
 using MotorHub.Domain.Entities;
-using MotorHub.Domain.Infrastructure.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace MotorHub.Infrastructure.Persistence.Repositories
 {
@@ -16,19 +14,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
         public async Task<Model> AddModelAsync(Model model)
         {
             _dbContext.Models.Add(model);
-
-            try
-            {
-                await _dbContext.SaveChangesAsync();
-            }
-            // Slug uniqueness is checked in the service, but that check and this save are not
-            // atomic; see the same guard in BrandRepository.AddBrandAsync.
-            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx
-                && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
-            {
-                throw new ConflictException("Model with the same name already exists.");
-            }
-
+            await _dbContext.SaveChangesOrConflictAsync("Model with the same name already exists.");
             return model;
         }
 
@@ -62,14 +48,23 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             return await _dbContext.Models.Include(m => m.Brand).FirstOrDefaultAsync(m => m.Id == modelId);
         }
 
-        public  Task SaveModelAsync()
+        public Task<Model?> GetModelDetailAsync(Guid modelId)
         {
-            return  _dbContext.SaveChangesAsync();
+            return _dbContext.Models
+                .AsNoTracking()
+                .Include(m => m.Brand)
+                .FirstOrDefaultAsync(m => m.Id == modelId);
         }
 
-        public Task<bool> ModelSlugExistsAsync(string slug)
+        public Task SaveModelAsync()
         {
-            return _dbContext.Models.AnyAsync(c => c.Slug == slug);
+            return _dbContext.SaveChangesOrConflictAsync("Model with the same name already exists.");
+        }
+
+        public Task<bool> ModelSlugExistsAsync(string slug, Guid? excludeModelId = null)
+        {
+            return _dbContext.Models.AnyAsync(m => m.Slug == slug
+                && (!excludeModelId.HasValue || m.Id != excludeModelId.Value));
         }
 
         public async Task<bool> HasModelsAsync(Guid brandId)

@@ -44,7 +44,7 @@ namespace MotorHub.Api.Controllers
             return Ok(cities);
         }
 
-        [HttpGet("city/{cityId}")]
+        [HttpGet("city/{cityId:guid}")]
         public async Task<IActionResult> GetCity([FromRoute] Guid cityId)
         {
             var city = await _locationService.GetCity(cityId);
@@ -63,7 +63,7 @@ namespace MotorHub.Api.Controllers
             return CreatedAtAction(nameof(GetCity), new { cityId = city.Id }, city);
         }
 
-        [HttpPut("city/{cityId}")]
+        [HttpPut("city/{cityId:guid}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> UpdateCity([FromRoute] Guid cityId, [FromBody] UpdateCityRequestDto request)
         {
@@ -71,12 +71,12 @@ namespace MotorHub.Api.Controllers
             return Ok(updatedCity);
         }
 
-        [HttpDelete("city/{cityId}")]
+        [HttpDelete("city/{cityId:guid}")]
         [Authorize(Policy = Policies.AdminOnly)]
         public async Task<IActionResult> DeleteCity([FromRoute] Guid cityId)
         {
             await _locationService.DeleteCity(cityId);
-            return Ok("City Deleted Successfully");
+            return NoContent();
         }
     }
 }

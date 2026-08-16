@@ -32,6 +32,10 @@ namespace MotorHub.Infrastructure.Persistence.Configurations
             builder.Property(u => u.LastName)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.Property(u => u.PhoneNumber)
+                .IsRequired()
+                .HasMaxLength(20);
         }
     }
 }

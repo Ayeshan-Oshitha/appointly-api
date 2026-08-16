@@ -44,6 +44,13 @@ namespace MotorHub.Infrastructure.Persistence.Configurations
             builder.Property(a => a.CreatedAt)
                 .IsRequired();
 
+            // Bounded to match the request DTOs; both were unbounded text columns.
+            builder.Property(a => a.Address)
+                .HasMaxLength(250);
+
+            builder.Property(a => a.RejectedReason)
+                .HasMaxLength(500);
+
             builder.HasOne(a => a.Brand)
                 .WithMany()
                 .HasForeignKey(a => a.BrandId)

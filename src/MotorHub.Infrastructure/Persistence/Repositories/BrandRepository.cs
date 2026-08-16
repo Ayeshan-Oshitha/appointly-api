@@ -1,8 +1,6 @@
 ﻿using MotorHub.Application.Common.Interfaces.Persistence;
 using MotorHub.Domain.Entities;
-using MotorHub.Domain.Infrastructure.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace MotorHub.Infrastructure.Persistence.Repositories
 {
@@ -18,20 +16,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
         public async Task<Brand> AddBrandAsync(Brand brand)
         {
             _dbContext.Brands.Add(brand);
-
-            try
-            {
-                await _dbContext.SaveChangesAsync();
-            }
-            // The service checks the slug first, but another request can insert the same slug
-            // between that check and this save. The unique index catches it either way; without
-            // this the racing caller would get a 500 instead of the 409 the check produces.
-            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx
-                && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
-            {
-                throw new ConflictException("Brand with the same name already exists.");
-            }
-
+            await _dbContext.SaveChangesOrConflictAsync("Brand with the same name already exists.");
             return brand;
         }
 
@@ -58,14 +43,15 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             return await _dbContext.Brands.FirstOrDefaultAsync(b => b.Id == brandId);
         }
 
-        public Task<bool> BrandSlugExistsAsync(string slug)
+        public Task<bool> BrandSlugExistsAsync(string slug, Guid? excludeBrandId = null)
         {
-            return _dbContext.Brands.AnyAsync(b => b.Slug == slug);
+            return _dbContext.Brands.AnyAsync(b => b.Slug == slug
+                && (!excludeBrandId.HasValue || b.Id != excludeBrandId.Value));
         }
 
         public Task SaveChangesAsync()
         {
-            return _dbContext.SaveChangesAsync();
+            return _dbContext.SaveChangesOrConflictAsync("Brand with the same name already exists.");
         }
     }
 }

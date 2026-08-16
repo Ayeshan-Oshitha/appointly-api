@@ -40,7 +40,11 @@ namespace MotorHub.Application.Services.Models
             }
 
             var addedModel = await _modelRepository.AddModelAsync(model);
-            return _mapper.Map<ModelResponseDto>(addedModel);
+
+            // ModelResponseDto carries the brand *name*, which lives on a navigation property a
+            // freshly-inserted entity has never loaded. Re-read through GetModelByIdAsync, which
+            // Includes Brand, instead of mapping the value the write returned.
+            return await MapModelWithBrandAsync(addedModel.Id);
         }
 
         public async Task<List<ModelResponseDto>> GetModels(Guid? brandId)
@@ -60,8 +64,17 @@ namespace MotorHub.Application.Services.Models
 
             if (!string.IsNullOrEmpty(request.Name))
             {
+                var slug = request.Name.Trim().ToLower().Replace(" ", "-");
+
+                // The create path checks this; without the same check here a rename onto an
+                // existing model's name reaches the unique index and fails as a 500, not a 409.
+                if (await _modelRepository.ModelSlugExistsAsync(slug, modelId))
+                {
+                    throw new ConflictException("Model with the same name already exists.");
+                }
+
                 existingModel.Name = request.Name;
-                existingModel.Slug = request.Name.Trim().ToLower().Replace(" ", "-");
+                existingModel.Slug = slug;
             }
 
             if (request.BrandId.HasValue)
@@ -75,7 +88,24 @@ namespace MotorHub.Application.Services.Models
             }
 
             await _modelRepository.SaveModelAsync();
-            return _mapper.Map<ModelResponseDto>(existingModel);
+
+            // Changing BrandId does not necessarily move the Brand navigation with it, so mapping
+            // existingModel here can pair the new BrandId with the old brand name.
+            return await MapModelWithBrandAsync(existingModel.Id);
+        }
+
+        // Reads the model back through the loader that Includes Brand, so the response always has
+        // the brand name ModelResponseDto expects.
+        private async Task<ModelResponseDto> MapModelWithBrandAsync(Guid modelId)
+        {
+            var model = await _modelRepository.GetModelDetailAsync(modelId);
+
+            if (model == null)
+            {
+                throw new NotFoundException("Model not found.");
+            }
+
+            return _mapper.Map<ModelResponseDto>(model);
         }
 
         public async Task DeleteModel(Guid modelId)

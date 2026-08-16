@@ -47,7 +47,7 @@ namespace MotorHub.Application.Services.Location
         // Get city by cityId
         public async Task<CityResponseDto?> GetCity(Guid cityId)
         {
-            var city = await _locationRepository.GetCityById(cityId);
+            var city = await _locationRepository.GetCityDetailAsync(cityId);
             return city == null ? null : _mapper.Map<CityResponseDto>(city);
         }
 
@@ -69,7 +69,11 @@ namespace MotorHub.Application.Services.Location
             }
 
             var addedCity = await _locationRepository.AddCityAsync(city);
-            return _mapper.Map<CityResponseDto>(addedCity);
+
+            // CityResponseDto carries the province and district *names*, which live on navigation
+            // properties a freshly-inserted entity has never loaded. Re-read through GetCityById,
+            // which Includes both, instead of mapping the value the write returned.
+            return await MapCityWithNavigationsAsync(addedCity.Id);
         }
 
         public async Task<CityResponseDto> UpdateCity(Guid cityId, UpdateCityRequestDto request)
@@ -88,8 +92,17 @@ namespace MotorHub.Application.Services.Location
 
             if (!string.IsNullOrEmpty(request.Name))
             {
+                var slug = request.Name.Trim().ToLower().Replace(" ", "-");
+
+                // The create path checks this; without the same check here a rename onto an
+                // existing city's name reaches the unique index and fails as a 500, not a 409.
+                if (await _locationRepository.CitySlugExistsAsync(slug, cityId))
+                {
+                    throw new ConflictException("City with the same name already exists");
+                }
+
                 existingCity.Name = request.Name;
-                existingCity.Slug = request.Name.Trim().ToLower().Replace(" ", "-");
+                existingCity.Slug = slug;
             }
             if (request.ProvinceId.HasValue || request.DistrictId.HasValue)
             {
@@ -98,7 +111,11 @@ namespace MotorHub.Application.Services.Location
             }
 
             await _locationRepository.SaveChangesAsync();
-            return _mapper.Map<CityResponseDto>(existingCity);
+
+            // Changing ProvinceId/DistrictId does not move the Province/District navigations with
+            // them - the replacement was read with AsNoTracking, so EF has no tracked principal to
+            // fix up. Mapping existingCity here would pair the new IDs with the old names.
+            return await MapCityWithNavigationsAsync(existingCity.Id);
         }
 
         public async Task DeleteCity(Guid cityId)
@@ -116,6 +133,21 @@ namespace MotorHub.Application.Services.Location
             {
                 throw new NotFoundException("Failed to delete city");
             }
+        }
+
+
+        // Reads the city back through the loader that Includes Province and District, so the
+        // response always has the names CityResponseDto expects.
+        private async Task<CityResponseDto> MapCityWithNavigationsAsync(Guid cityId)
+        {
+            var city = await _locationRepository.GetCityDetailAsync(cityId);
+
+            if (city == null)
+            {
+                throw new NotFoundException("City not found");
+            }
+
+            return _mapper.Map<CityResponseDto>(city);
         }
 
 

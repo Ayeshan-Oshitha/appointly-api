@@ -75,8 +75,17 @@ namespace MotorHub.Application.Services.Brands
                 throw new NotFoundException("Brand not found");
             }
 
+            var slug = request.Name.Trim().ToLower().Replace(" ", "-");
+
+            // The create path checks this; without the same check here a rename onto an existing
+            // brand's name reaches the unique index and fails as a 500, not a 409.
+            if (await _brandRepository.BrandSlugExistsAsync(slug, brandId))
+            {
+                throw new ConflictException("Brand with the same name already exists.");
+            }
+
             existingBrand.Name = request.Name;
-            existingBrand.Slug = request.Name.Trim().ToLower().Replace(" ", "-");
+            existingBrand.Slug = slug;
             await _brandRepository.SaveChangesAsync();
             return _mapper.Map<BrandResponseDto>(existingBrand);
         }

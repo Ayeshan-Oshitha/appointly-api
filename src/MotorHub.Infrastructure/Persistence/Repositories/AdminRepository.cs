@@ -51,18 +51,26 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             return result;
         }
 
-        public async Task<bool> PromoteToAdminAsync(Guid userId, Guid changeRoleRequestId, Guid currentUserId)
+        public Task<bool> PromoteToAdminAsync(Guid userId, Guid changeRoleRequestId, Guid currentUserId)
         {
-            // Load Request 
-            var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
+            return PromoteAsync(userId, changeRoleRequestId, currentUserId, Roles.Admin);
+        }
 
-            if (request == null)
-            {
-                throw new NotFoundException("Role change request not found.");
-            }
+        public Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currentUserId)
+        {
+            return PromoteAsync(userId, changeRoleRequestId, currentUserId, Roles.Seller);
+        }
 
-            // Load User
-            var user = await _dbContext.DomainUsers.FirstOrDefaultAsync(x => x.Id == userId);
+        // Both promotions differ only in which role is granted, so they share one body.
+        private async Task<bool> PromoteAsync(
+            Guid userId,
+            Guid changeRoleRequestId,
+            Guid currentUserId,
+            string roleToGrant)
+        {
+            var user = await _dbContext.DomainUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == userId);
 
             if (user == null)
             {
@@ -83,81 +91,26 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
             try
             {
+                // Claim the request before granting anything. Gating on Status = Pending makes the
+                // transition atomic, so of two admins approving at once exactly one proceeds; the
+                // loser affects zero rows and leaves without granting a role.
+                if (!await TryCompleteRoleRequestAsync(
+                        changeRoleRequestId, RoleRequestTypes.Approved, currentUserId, rejectionReason: null))
+                {
+                    throw await RoleRequestFailureAsync(changeRoleRequestId);
+                }
+
                 // Roles are additive: User is the baseline every account keeps, Seller and Admin are
                 // tiers layered on top. Removing the existing roles here would strip User and lock the
                 // promoted account out of every User-gated endpoint.
-                if (!await _userManager.IsInRoleAsync(identityUser, Roles.Admin))
+                if (!await _userManager.IsInRoleAsync(identityUser, roleToGrant))
                 {
-                    var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Admin);
+                    var addResult = await _userManager.AddToRoleAsync(identityUser, roleToGrant);
                     if (!addResult.Succeeded)
                     {
                         throw new BadRequestException("Failed to assign new role.");
                     }
                 }
-
-                // Update Role Change Request Status
-                request.Status = RoleRequestTypes.Approved;
-                request.ReviewedByAdminId = currentUserId;
-                request.ReviewedAt = DateTime.UtcNow;
-
-                await _dbContext.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-                return true;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-
-        public async Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currentUserId)
-        {
-            // Load Request 
-            var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
-
-            if (request == null)
-            {
-                throw new NotFoundException("Role change request not found.");
-            }
-
-            // Load User
-            var user = await _dbContext.DomainUsers.FirstOrDefaultAsync(x => x.Id == userId);
-
-            if (user == null)
-            {
-                throw new NotFoundException("User not found.");
-            }
-
-            var identityUser = await _userManager.FindByIdAsync(user.IdentityUserId.ToString());
-
-            if (identityUser == null)
-            {
-                throw new NotFoundException("Identity User not found.");
-            }
-
-            // Transactional for the same reason as PromoteToAdminAsync above.
-            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-
-            try
-            {
-                // Additive, for the same reason as PromoteToAdminAsync above.
-                if (!await _userManager.IsInRoleAsync(identityUser, Roles.Seller))
-                {
-                    var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Seller);
-                    if (!addResult.Succeeded)
-                    {
-                        throw new BadRequestException("Failed to assign new role.");
-                    }
-                }
-
-                // Update Role Change Request Status
-                request.Status = RoleRequestTypes.Approved;
-                request.ReviewedByAdminId = currentUserId;
-                request.ReviewedAt = DateTime.UtcNow;
-
-                await _dbContext.SaveChangesAsync();
 
                 await transaction.CommitAsync();
                 return true;
@@ -171,21 +124,47 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
         public async Task<bool> RejectPromoteRequestAsync(Guid changeRoleRequestId, Guid currentUserId, string? rejectReason)
         {
-            // Load Request 
-            var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
-
-            if (request == null)
+            if (!await TryCompleteRoleRequestAsync(
+                    changeRoleRequestId, RoleRequestTypes.Rejected, currentUserId, rejectReason))
             {
-                throw new NotFoundException("Role change request not found.");
+                throw await RoleRequestFailureAsync(changeRoleRequestId);
             }
 
-            request.Status = RoleRequestTypes.Rejected;
-            request.RejectionReason = rejectReason ?? null;
-            request.ReviewedByAdminId = currentUserId;
-            request.ReviewedAt = DateTime.UtcNow;
-
-            await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        // Writes a request's outcome in one UPDATE gated on it still being Pending. Returns false
+        // when another admin already moved it, which the caller turns into a 409.
+        private async Task<bool> TryCompleteRoleRequestAsync(
+            Guid changeRoleRequestId,
+            RoleRequestTypes outcome,
+            Guid currentUserId,
+            string? rejectionReason)
+        {
+            var reviewedAt = DateTime.UtcNow;
+
+            var rowsAffected = await _dbContext.RoleChangeRequests
+                .Where(x => x.Id == changeRoleRequestId && x.Status == RoleRequestTypes.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.Status, outcome)
+                    .SetProperty(x => x.RejectionReason, rejectionReason)
+                    .SetProperty(x => x.ReviewedByAdminId, (Guid?)currentUserId)
+                    .SetProperty(x => x.ReviewedAt, (DateTime?)reviewedAt));
+
+            return rowsAffected > 0;
+        }
+
+        // Zero rows affected means either the request is gone or another admin got there first;
+        // only a second lookup can tell those apart, and it only runs on the failure path.
+        private async Task<Exception> RoleRequestFailureAsync(Guid changeRoleRequestId)
+        {
+            var exists = await _dbContext.RoleChangeRequests
+                .AsNoTracking()
+                .AnyAsync(x => x.Id == changeRoleRequestId);
+
+            return exists
+                ? new ConflictException("Role change request was already reviewed by another admin.")
+                : new NotFoundException("Role change request not found.");
         }
 
         // The three review transitions below carry their precondition in the UPDATE's WHERE clause

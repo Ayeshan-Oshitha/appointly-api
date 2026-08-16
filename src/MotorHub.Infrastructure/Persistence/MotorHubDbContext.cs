@@ -26,8 +26,10 @@ namespace MotorHub.Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(MotorHubDbContext).Assembly);
+            // Base first: IdentityDbContext configures its own entities here, and applying this
+            // project's configurations afterwards means they win on anything that overlaps.
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(MotorHubDbContext).Assembly);
         }
     }
 }

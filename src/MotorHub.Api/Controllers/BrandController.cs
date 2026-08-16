@@ -17,7 +17,6 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAllBrands()
         {
             var brands = await _brandService.GetAllBrands();
@@ -29,7 +28,9 @@ namespace MotorHub.Api.Controllers
         public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequestDto request)
         {
             var brand = await _brandService.AddBrand(request);
-            return Ok(brand);
+            // 201 rather than CreatedAtAction: there is no GET-by-id action to point a Location
+            // header at yet. Same for the other creates.
+            return StatusCode(StatusCodes.Status201Created, brand);
         }
 
         [HttpPut("{brandId:guid}")]
@@ -45,7 +46,7 @@ namespace MotorHub.Api.Controllers
         public async Task<IActionResult> DeleteBrand([FromRoute] Guid brandId)
         {
            await _brandService.DeleteBrand(brandId);
-           return Ok("Brand Deleted Successfully");
+           return NoContent();
         }
     }
 }

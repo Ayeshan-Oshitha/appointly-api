@@ -27,7 +27,7 @@ namespace MotorHub.Domain.Entities
         public string ContactPhone { get; set; } = null!;
         public string ContactEmail { get; set; } = null!;
         public bool IsHidePhone { get; set; } = false;
-        public bool? IsWhatsapp { get; set; } = false;
+        public bool IsWhatsapp { get; set; } = false;
 
         public Guid SellerId { get; set; }
         public Guid? ReviewByAdminId { get; set; }

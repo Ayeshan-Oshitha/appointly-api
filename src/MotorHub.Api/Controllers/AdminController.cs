@@ -17,15 +17,20 @@ namespace MotorHub.Api.Controllers
             _adminService = adminService;
         }
 
-        [HttpGet("GetAllUsers")]
+        [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _adminService.GetAllUsers();
             return Ok(users);
         }
 
-        [HttpPost("PromoteToAdmin")]
-        public async Task<IActionResult> PromoteToAdmin([FromQuery] Guid userId, Guid changeRoleRequestId)
+        // The role-request routes mirror the advertisement review routes below: the subject's id
+        // in the path, the transition as the trailing verb. userId stays a query parameter because
+        // AdminService cross-checks it against the request's own UserId.
+        [HttpPost("role-requests/{changeRoleRequestId:guid}/promote-admin")]
+        public async Task<IActionResult> PromoteToAdmin(
+            [FromRoute] Guid changeRoleRequestId,
+            [FromQuery] Guid userId)
         {
             var isAdmin = await _adminService.PromoteToAdmin(userId, changeRoleRequestId);
             if (isAdmin)
@@ -35,21 +40,23 @@ namespace MotorHub.Api.Controllers
             return BadRequest("User couldn't Promote to Admin");
         }
 
-        [HttpPost("PromoteToSeller")]
-        public async Task<IActionResult> PromoteToSeller([FromQuery] Guid userId, Guid changeRoleRequestId)
+        [HttpPost("role-requests/{changeRoleRequestId:guid}/promote-seller")]
+        public async Task<IActionResult> PromoteToSeller(
+            [FromRoute] Guid changeRoleRequestId,
+            [FromQuery] Guid userId)
         {
             var isSeller = await _adminService.PromoteToSeller(userId, changeRoleRequestId);
             if (isSeller)
             {
                 return Ok("User Promoted to Seller");
             }
-            return BadRequest();
+            return BadRequest("User couldn't Promote to Seller");
         }
 
-        [HttpPost("RejectPromoteRequest")]
+        [HttpPost("role-requests/{changeRoleRequestId:guid}/reject")]
         public async Task<IActionResult> RejectPromoteRequest(
+            [FromRoute] Guid changeRoleRequestId,
             [FromQuery] Guid userId,
-            Guid changeRoleRequestId,
             [FromBody] RejectReasonDto requestDto)
         {
             var isRejected = await _adminService.RejectPromoteRequest(userId, changeRoleRequestId, requestDto.RejectReason);

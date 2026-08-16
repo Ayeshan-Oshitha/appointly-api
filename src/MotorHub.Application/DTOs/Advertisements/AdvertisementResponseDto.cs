@@ -24,7 +24,7 @@ namespace MotorHub.Application.DTOs.Advertisements
         public Guid? ReviewByAdminId { get; set; }
         public DateTime? ReviewedAt { get; set; }
         public bool IsHidePhone { get; set; }
-        public bool? IsWhatsapp { get; set; }
+        public bool IsWhatsapp { get; set; }
         public bool IsBiddable { get; set; }
         public string? Status { get; set; }
         public bool IsDeleted { get; set; }

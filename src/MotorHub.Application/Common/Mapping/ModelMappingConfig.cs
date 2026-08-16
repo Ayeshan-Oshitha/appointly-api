@@ -8,8 +8,9 @@ namespace MotorHub.Application.Common.Mapping
     {
         public void Register(TypeAdapterConfig config)
         {
+            // Guarded rather than dereferenced directly; see LocationMappingConfig for why.
             config.NewConfig<Model, ModelResponseDto>()
-                .Map(dest => dest.Brand, src => src.Brand.Name);
+                .Map(dest => dest.Brand, src => src.Brand != null ? src.Brand.Name : null);
         }
     }
 }
