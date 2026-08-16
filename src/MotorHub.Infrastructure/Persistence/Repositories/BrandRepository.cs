@@ -35,7 +35,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
         public async Task<List<Brand>> GetAllBrandsAsync()
         {
-            return await _dbContext.Brands.ToListAsync();
+            return await _dbContext.Brands.AsNoTracking().ToListAsync();
         }
 
         public async Task<Brand?> GetBrandByIdAsync(Guid brandId)

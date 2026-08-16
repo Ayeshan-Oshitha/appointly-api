@@ -123,7 +123,7 @@ namespace MotorHub.Application.Services.Advertisements
 
             if (!deleted)
             {
-                throw new Exception("Failed to delete the advertisement.");
+                throw new NotFoundException("Failed to delete the advertisement.");
             }
         }
 

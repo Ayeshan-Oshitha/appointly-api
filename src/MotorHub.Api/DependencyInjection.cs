@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 
 namespace MotorHub.Api
@@ -8,6 +9,28 @@ namespace MotorHub.Api
         public static IServiceCollection AddPresentationServices(this IServiceCollection services)
         {
             services.AddSwaggerUI();
+
+            // [ApiController] model-validation failures default to RFC7807 ProblemDetails, which does
+            // not match the {title, error, errorCode} envelope ErrorHandlingMiddleware returns for
+            // everything else. Reshape it so clients only ever parse one error contract.
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState.Values
+                        .SelectMany(entry => entry.Errors)
+                        .Select(error => error.ErrorMessage)
+                        .Where(message => !string.IsNullOrWhiteSpace(message));
+
+                    return new BadRequestObjectResult(new
+                    {
+                        title = "Bad Request",
+                        error = string.Join("; ", errors),
+                        errorCode = StatusCodes.Status400BadRequest
+                    });
+                };
+            });
+
             return services;
         }
 

@@ -4,9 +4,7 @@ using MotorHub.Api.Middleware;
 using MotorHub.Application;
 using MotorHub.Infrastructure;
 using MotorHub.Infrastructure.Persistence;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +25,6 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddDbContext<MotorHubDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         );
-    builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
     builder.Services.AddCors(options => {
         options.AddDefaultPolicy(policy =>

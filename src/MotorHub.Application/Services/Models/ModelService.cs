@@ -91,7 +91,7 @@ namespace MotorHub.Application.Services.Models
 
             if (!deleted)
             {
-                throw new Exception("Failed to delete the model.");  
+                throw new NotFoundException("Failed to delete the model.");  
             }
         }
     }

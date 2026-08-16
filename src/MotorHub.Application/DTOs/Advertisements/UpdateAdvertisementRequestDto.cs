@@ -38,7 +38,7 @@ namespace MotorHub.Application.DTOs.Advertisements
 
         public Guid? ModelId { get; set; }
 
-        public required Guid? CityId { get; set; }
+        public Guid? CityId { get; set; }
 
         [MaxLength(100)]
         public string? ContactName { get; set; }

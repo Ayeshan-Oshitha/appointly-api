@@ -69,7 +69,7 @@ namespace MotorHub.Application.Services.RoleChange
 
             if (!deleted)
             {
-                throw new Exception("Failed to delete role change request.");
+                throw new NotFoundException("Failed to delete role change request.");
             }
         }
     }

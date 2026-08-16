@@ -114,7 +114,7 @@ namespace MotorHub.Application.Services.Location
 
             if (!deleted)
             {
-                throw new Exception("Failed to delete city");
+                throw new NotFoundException("Failed to delete city");
             }
         }
 

@@ -5,9 +5,9 @@ namespace MotorHub.Domain.Entities
     {
         public Guid Id { get; private set; }
         public Guid IdentityUserId { get; private set; }
-        public string FirstName { get; private set; }
-        public string LastName { get; private set; }
-        public string PhoneNumber { get; private set; }
+        public string FirstName { get; private set; } = null!;
+        public string LastName { get; private set; } = null!;
+        public string PhoneNumber { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; private set; }
 
@@ -25,17 +25,6 @@ namespace MotorHub.Domain.Entities
             FirstName = firstName;
             LastName = lastName;
             PhoneNumber = phoneNumber;
-        }
-
-        public void UpdateProfile(
-            string firstName,
-            string lastName,
-            string phoneNumber)
-        {
-            FirstName = firstName;
-            LastName = lastName;
-            PhoneNumber = phoneNumber;
-            UpdatedAt = DateTime.UtcNow;
         }
     }
 }

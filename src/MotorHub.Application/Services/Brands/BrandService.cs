@@ -62,7 +62,7 @@ namespace MotorHub.Application.Services.Brands
 
             if (!deleted)
             {
-                throw new Exception("Failed to delete the Brand");
+                throw new NotFoundException("Failed to delete the Brand");
             }
         }
 

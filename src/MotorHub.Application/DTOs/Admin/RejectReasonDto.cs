@@ -1,6 +1,6 @@
 namespace MotorHub.Application.DTOs.Admin
 {
-    public class RejectPromoteRequestDto
+    public class RejectReasonDto
     {
         public string? RejectReason { get; set; }
     }

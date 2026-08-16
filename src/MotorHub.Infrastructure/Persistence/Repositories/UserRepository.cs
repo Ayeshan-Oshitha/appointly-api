@@ -56,7 +56,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
                 if (!roleResult.Succeeded)
                 {
-                    throw new Exception(roleResult.Errors.First().Description);
+                    throw new BadRequestException(roleResult.Errors.First().Description);
                 }
 
                 var user = new User(

@@ -11,8 +11,8 @@ namespace MotorHub.Application.DTOs.Advertisements
         public string? FuelType { get; set; }
         public string? TransmissionType { get; set; }
         public string? VehicleCondition { get; set; }
-        public string? CreatedAt { get; set; }
-        public string? UpdatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public string? Address { get; set; }
         public Guid? BrandId { get; set; }
         public Guid? ModelId { get; set; }

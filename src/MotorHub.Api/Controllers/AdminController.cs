@@ -50,7 +50,7 @@ namespace MotorHub.Api.Controllers
         public async Task<IActionResult> RejectPromoteRequest(
             [FromQuery] Guid userId,
             Guid changeRoleRequestId,
-            [FromBody] RejectPromoteRequestDto requestDto)
+            [FromBody] RejectReasonDto requestDto)
         {
             var isRejected = await _adminService.RejectPromoteRequest(userId, changeRoleRequestId, requestDto.RejectReason);
             if (isRejected)
@@ -68,7 +68,7 @@ namespace MotorHub.Api.Controllers
         }
 
         [HttpPost("advertisement/{advertisementId:guid}/reject")]
-        public async Task<IActionResult> RejectAdvertisement([FromRoute] Guid advertisementId, [FromBody] RejectAdvertisementRequestDto requestDto)
+        public async Task<IActionResult> RejectAdvertisement([FromRoute] Guid advertisementId, [FromBody] RejectReasonDto requestDto)
         {
             var advertisement = await _adminService.RejectAdvertisement(advertisementId, requestDto.RejectReason);
             return Ok(advertisement);

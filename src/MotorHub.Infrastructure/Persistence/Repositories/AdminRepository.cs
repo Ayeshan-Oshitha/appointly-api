@@ -22,12 +22,12 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
         public async Task<List<UserResponseDto>> GetAllUsersAsync()
         {
-            var identityUsers = await _userManager.Users.ToListAsync();
+            var identityUsers = await _userManager.Users.AsNoTracking().ToListAsync();
 
             var identityUserIds = identityUsers.Select(u => u.Id).ToList();
 
             var domainUsers = await _dbContext.DomainUsers
-                .Where(u => identityUserIds.Contains(u.IdentityUserId)).ToListAsync();
+                .Where(u => identityUserIds.Contains(u.IdentityUserId)).AsNoTracking().ToListAsync();
 
             var result = new List<UserResponseDto>();
 
@@ -51,7 +51,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             return result;
         }
 
-        public async Task<bool> PromoteToAdminAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId)
+        public async Task<bool> PromoteToAdminAsync(Guid userId, Guid changeRoleRequestId, Guid currentUserId)
         {
             // Load Request 
             var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
@@ -91,13 +91,13 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                     var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Admin);
                     if (!addResult.Succeeded)
                     {
-                        throw new Exception("Failed to assign new role.");
+                        throw new BadRequestException("Failed to assign new role.");
                     }
                 }
 
                 // Update Role Change Request Status
                 request.Status = RoleRequestTypes.Approved;
-                request.ReviewedByAdminId = currrentUserId;
+                request.ReviewedByAdminId = currentUserId;
                 request.ReviewedAt = DateTime.UtcNow;
 
                 await _dbContext.SaveChangesAsync();
@@ -112,7 +112,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currrentUserId)
+        public async Task<bool> PromoteToSellerAsync(Guid userId, Guid changeRoleRequestId, Guid currentUserId)
         {
             // Load Request 
             var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
@@ -148,13 +148,13 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
                     var addResult = await _userManager.AddToRoleAsync(identityUser, Roles.Seller);
                     if (!addResult.Succeeded)
                     {
-                        throw new Exception("Failed to assign new role.");
+                        throw new BadRequestException("Failed to assign new role.");
                     }
                 }
 
                 // Update Role Change Request Status
                 request.Status = RoleRequestTypes.Approved;
-                request.ReviewedByAdminId = currrentUserId;
+                request.ReviewedByAdminId = currentUserId;
                 request.ReviewedAt = DateTime.UtcNow;
 
                 await _dbContext.SaveChangesAsync();
@@ -169,7 +169,7 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<bool> RejectPromoteRequestAsync(Guid changeRoleRequestId, Guid currrentUserId, string? rejectReason)
+        public async Task<bool> RejectPromoteRequestAsync(Guid changeRoleRequestId, Guid currentUserId, string? rejectReason)
         {
             // Load Request 
             var request = await _dbContext.RoleChangeRequests.FirstOrDefaultAsync(x => x.Id == changeRoleRequestId);
@@ -181,17 +181,11 @@ namespace MotorHub.Infrastructure.Persistence.Repositories
 
             request.Status = RoleRequestTypes.Rejected;
             request.RejectionReason = rejectReason ?? null;
-            request.ReviewedByAdminId = currrentUserId;
+            request.ReviewedByAdminId = currentUserId;
             request.ReviewedAt = DateTime.UtcNow;
 
             await _dbContext.SaveChangesAsync();
             return true;
-        }
-
-        public async Task<RoleChangeRequest?> GetExistingPendingRequestsByUserIdAsync(Guid userId)
-        {
-            return await _dbContext.RoleChangeRequests
-                .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == RoleRequestTypes.Pending);
         }
 
         public async Task<Advertisement> ApproveAdvertisementAsync(Guid AdvertisementId, Guid currentUserId)
