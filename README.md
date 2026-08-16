@@ -1,1 +1,1 @@
-# appointly-api
+# motorhub-api
